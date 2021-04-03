@@ -90,7 +90,8 @@ public class WorldController : MonoBehaviour
             Debug.Log("Building: " + building.Name);
             Debug.Log(building.Cost);
             worldPosition[0] += (building.Size.Item1 - 1) * 0.5f; // Larger objects do not fit coordinates
-            Instantiate(prefabByName(building.Name), worldPosition, Quaternion.identity);
+            worldPosition[1] += (building.Size.Item2 - 1) * 0.5f;
+            Instantiate(PrefabByName(building.Name), worldPosition, Quaternion.identity);
             Debug.Log("Created " + building.Name + " at " + worldPosition);
             rc.AddResourceBuilding(b);
             return true;
@@ -101,7 +102,7 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    GameObject prefabByName(string buildingName, string prefabDir="BuildingPrefabs") {
+    GameObject PrefabByName(string buildingName, string prefabDir="BuildingPrefabs") {
         string path = prefabDir + "/" + buildingName;
         GameObject newBuilding = (GameObject)Resources.Load(path, typeof(GameObject));
         Debug.Log(path);
@@ -128,9 +129,18 @@ public class WorldController : MonoBehaviour
         Debug.Log(buildings[0].Cost);
     }
 
-    public string[] getAllBuildings() {
+    public string[] getAllBuildingNames() {
         string[] buildingNames = buildings.Select(b => b.Name).ToArray();
         return buildingNames;
+    }
+
+    public BuildingModel GetBuildingByName(string buildingName) {
+        BuildingModel bm = buildings.SingleOrDefault(item => item.Name == buildingName);
+        return bm;
+    }
+
+    public BuildingModel[] getAllBuildings() {
+        return buildings;
     }
 
     void LoadDataConfigJson() {

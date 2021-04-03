@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class UIController : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class UIController : MonoBehaviour
 
     StateController ac;
     public Text resourceText;
+    public Canvas UICanvas;
     public GameObject buttonPanel;
     public Button buildBuildingButton;
     public Button buildMenuButton;
@@ -31,17 +33,32 @@ public class UIController : MonoBehaviour
 
     void Update()
     {
-        RenderUI();
+        UpdateUI();
         ListenMapClick();
     }
 
-    void RenderUI() {
+    void UpdateUI() {
         float resources = rc.Resources;
         resourceText.text = System.String.Format("Resources: {0:0}", resources);
+        // Gray out build menu items that are not affordable
+        if (buildMenuOpen) {
+            foreach (Transform child in buttonPanel.transform) {
+                Text buttonText = child.GetChild(0).GetComponent<Text>();
+                if (resources < wc.GetBuildingByName(buttonText.text).Cost) {
+                    Color textColor = buttonText.color;
+                    textColor.a = 0.5f;
+                    buttonText.color = textColor;
+                }
+            }
+        }
     }
 
     void ListenMapClick() {
         if (Input.GetButtonDown("Fire1")) {
+            if (EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
             Vector3 worldPosition;
             Plane plane = new Plane(Vector3.back, 0);
             float distance;
@@ -57,8 +74,6 @@ public class UIController : MonoBehaviour
     }
 
     void CreateButtonClicks() {
-        // buildHouseButton.onClick.AddListener(() => {BuildButtonClick("House");});
-        // buildFactoryButton.onClick.AddListener(() => {BuildButtonClick("Factory");});
         buildMenuButton.onClick.AddListener(buildMenuClick);
     }
 
@@ -68,16 +83,13 @@ public class UIController : MonoBehaviour
     }
 
     void openBuildMenu() {
-        string[] buildings = wc.getAllBuildings();
-        
-        foreach (string b in buildings) {
+        BuildingModel[] buildings = wc.getAllBuildings();
+        foreach (BuildingModel b in buildings) {
             Button button = (Button)Instantiate(buildBuildingButton);
             button.transform.SetParent(buttonPanel.transform);
-            button.GetComponent<Button>().onClick.AddListener(() => {BuildButtonClick(b);});
-            button.transform.GetChild(0).GetComponent<Text>().text = b;
+            button.GetComponent<Button>().onClick.AddListener(() => {BuildButtonClick(b.Name);});
+            button.transform.GetChild(0).GetComponent<Text>().text = b.Name;
         }
-        // buildHouseButton.gameObject.SetActive(true);
-        // buildFactoryButton.gameObject.SetActive(true);
         buildMenuOpen = true;
     }
 
@@ -85,8 +97,6 @@ public class UIController : MonoBehaviour
         foreach (Transform child in buttonPanel.transform) {
             GameObject.Destroy(child.gameObject);
         }
-        // buildHouseButton.gameObject.SetActive(false);
-        // buildFactoryButton.gameObject.SetActive(false);
         buildMenuOpen = false;
     }
 
