@@ -102,11 +102,13 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    GameObject PrefabByName(string buildingName, string prefabDir="BuildingPrefabs") {
+    public bool CanAfford(string b) {
+        return (buildings.SingleOrDefault(item => item.Name == b).Cost < rc.Resources);
+    }
+
+    public GameObject PrefabByName(string buildingName, string prefabDir="BuildingPrefabs") {
         string path = prefabDir + "/" + buildingName;
         GameObject newBuilding = (GameObject)Resources.Load(path, typeof(GameObject));
-        Debug.Log(path);
-        Debug.Log(newBuilding);
         return newBuilding;
     }
 

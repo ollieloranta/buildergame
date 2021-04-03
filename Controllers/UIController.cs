@@ -22,8 +22,12 @@ public class UIController : MonoBehaviour
 
     bool buildMenuOpen;
 
+    GameObject currentBuilding;
+    bool buildingPlaced;
+
     void Start()
     {
+        buildingPlaced = false;
         wc = worldController.GetComponent<WorldController>();
         rc = resourceController.GetComponent<ResourceController>();
         ac = stateController.GetComponent<StateController>();
@@ -31,10 +35,11 @@ public class UIController : MonoBehaviour
         closeBuildMenu();
     }
 
-    void Update()
+    void LateUpdate()
     {
         UpdateUI();
         ListenMapClick();
+        HoverBuilding();
     }
 
     void UpdateUI() {
@@ -44,9 +49,13 @@ public class UIController : MonoBehaviour
         if (buildMenuOpen) {
             foreach (Transform child in buttonPanel.transform) {
                 Text buttonText = child.GetChild(0).GetComponent<Text>();
+                Color textColor = buttonText.color;
                 if (resources < wc.GetBuildingByName(buttonText.text).Cost) {
-                    Color textColor = buttonText.color;
                     textColor.a = 0.5f;
+                    buttonText.color = textColor;
+                }
+                else {
+                    textColor.a = 1.0f;
                     buttonText.color = textColor;
                 }
             }
@@ -69,6 +78,26 @@ public class UIController : MonoBehaviour
                 worldPosition[0] = Mathf.Round(worldPosition[0]);
                 worldPosition[1] = Mathf.Round(worldPosition[1]);
                 Tile selectedTile = wc.TileClicked(worldPosition);
+            }
+            buildingPlaced = true;
+        }
+    }
+
+    void HoverBuilding() {
+        if (currentBuilding != null && !buildingPlaced) {
+            Vector3 worldPosition;
+            Plane plane = new Plane(Vector3.back, 0);
+            float distance;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (plane.Raycast(ray, out distance))
+            {
+                Vector3 buildingSize = currentBuilding.GetComponent<Renderer>().bounds.size;
+                worldPosition = ray.GetPoint(distance);
+                worldPosition[0] = Mathf.Round(worldPosition[0]);
+                worldPosition[1] = Mathf.Round(worldPosition[1]);
+                worldPosition[0] += (currentBuilding.transform.localScale[0] - 1) * 0.5f;
+                worldPosition[1] += (currentBuilding.transform.localScale[1] - 1) * 0.5f;
+                currentBuilding.transform.position = worldPosition;
             }
         }
     }
@@ -101,7 +130,11 @@ public class UIController : MonoBehaviour
     }
 
     void BuildButtonClick(string building) {
-        wc.SelectBuilding(building);
-        closeBuildMenu();
+        if (wc.CanAfford(building)) {
+            wc.SelectBuilding(building);
+            currentBuilding = ((GameObject) Instantiate (wc.PrefabByName(building)));
+            buildingPlaced = false;
+            closeBuildMenu();
+        }
     }
 }
