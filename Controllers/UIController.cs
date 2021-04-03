@@ -50,7 +50,8 @@ public class UIController : MonoBehaviour
             foreach (Transform child in buttonPanel.transform) {
                 Text buttonText = child.GetChild(0).GetComponent<Text>();
                 Color textColor = buttonText.color;
-                if (resources < wc.GetBuildingByName(buttonText.text).Cost) {
+                string b = buttonText.text;
+                if (resources < wc.GetBuildingByName(b).Cost || !wc.buildingUnlocked(b)) {
                     textColor.a = 0.5f;
                     buttonText.color = textColor;
                 }
@@ -130,11 +131,18 @@ public class UIController : MonoBehaviour
     }
 
     void BuildButtonClick(string building) {
-        if (wc.CanAfford(building)) {
-            wc.SelectBuilding(building);
-            currentBuilding = ((GameObject) Instantiate (wc.PrefabByName(building)));
-            buildingPlaced = false;
-            closeBuildMenu();
+        if (wc.buildingUnlocked(building)) {
+            if (wc.CanAfford(building)) {
+                wc.SelectBuilding(building);
+                currentBuilding = ((GameObject) Instantiate (wc.PrefabByName(building)));
+                buildingPlaced = false;
+                closeBuildMenu();
+            }
+            Debug.Log("Not enough money to build");
         }
+        else {
+            Debug.Log("Building not unlocked");
+        }
+        
     }
 }

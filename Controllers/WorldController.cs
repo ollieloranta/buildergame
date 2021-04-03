@@ -23,6 +23,7 @@ public class WorldController : MonoBehaviour
     World world;
     
     BuildingModel[] buildings;
+    List<GameObject> builtBuildings;
     DataConfig dataConfig;
 
     Vector3 mousePos;
@@ -36,7 +37,7 @@ public class WorldController : MonoBehaviour
         buildingSelected = false;
         rc = resourceController.GetComponent<ResourceController>();
         sc = stateController.GetComponent<StateController>();
-        
+        builtBuildings = new List<GameObject>();
         LoadBuildingJson();
         LoadDataConfigJson();
 
@@ -94,12 +95,29 @@ public class WorldController : MonoBehaviour
             Instantiate(PrefabByName(building.Name), worldPosition, Quaternion.identity);
             Debug.Log("Created " + building.Name + " at " + worldPosition);
             rc.AddResourceBuilding(b);
+            Debug.Log(b);
+            builtBuildings.Add(b);
             return true;
         }
         else {
-            Debug.Log("Not enough muneys");
             return false;
         }
+    }
+
+    public bool buildingUnlocked(string b) {
+        BuildingModel requiredBuilding = buildings.SingleOrDefault(item => item.Name == b);
+        Debug.Log(requiredBuilding);
+        Debug.Log(b);
+        Debug.Log(requiredBuilding.Requires);
+        foreach (string req in requiredBuilding.Requires) {
+            if (!builtBuildings.Find(i => i.GetComponent<Building>().Name == req)) {
+                Debug.Log("Requirement not found");
+                Debug.Log(builtBuildings);
+                Debug.Log(req);
+                return false;
+            }
+        }
+        return true;
     }
 
     public bool CanAfford(string b) {

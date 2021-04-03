@@ -8,7 +8,7 @@ public class BuildingModel
     public float Resources;
     public int Size_x;
     public int Size_y;
-    string[] Requires;
+    public string[] Requires;
 }
 
 [Serializable]
