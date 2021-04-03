@@ -1,0 +1,6 @@
+{
+    "Items": [
+        {"Name": "House", "Cost": "20", "Resources": 0.0, "Size_x": 1, "Size_y": 1},
+        {"Name": "Factory", "Cost": 50, "Resources": 10, "Size_x": 2, "Size_y": 1, "Requires": ["House"]}
+    ]
+}
