@@ -92,10 +92,20 @@ public class UIController : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (plane.Raycast(ray, out distance))
             {
+                Color c = currentBuilding.GetComponent<Renderer>().material.color;
                 Vector3 buildingSize = currentBuilding.GetComponent<Renderer>().bounds.size;
                 worldPosition = ray.GetPoint(distance);
                 worldPosition[0] = Mathf.Round(worldPosition[0]);
                 worldPosition[1] = Mathf.Round(worldPosition[1]);
+                if (wc.TileContents((int) worldPosition[0], (int) worldPosition[1]) == null) {
+                    // Tile has contents
+                    c.a = 1.0f;
+                }
+                else {
+                    Debug.Log("Over tree");
+                    c.a = 0.5f;
+                }
+                currentBuilding.GetComponent<Renderer>().material.color = c;
                 worldPosition[0] += (currentBuilding.transform.localScale[0] - 1) * 0.5f;
                 worldPosition[1] += (currentBuilding.transform.localScale[1] - 1) * 0.5f;
                 currentBuilding.transform.position = worldPosition;

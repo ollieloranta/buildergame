@@ -10,15 +10,17 @@ public class Tile
     int x;
     int y;
     int h;
+    int f;
     TileType type;
     GameObject contents;
 
-    public Tile(World world, int x, int y, int h=0)
+    public Tile(World world, int x, int y, int h=0, int f=0)
     {
         this.world = world;
         this.x = x;
         this.y = y;
         this.h = h;
+        this.f = f;
     }
 
     public TileType Type {
@@ -49,6 +51,15 @@ public class Tile
         set {
             h = value;
             setTileType();
+        }
+    }
+    
+    public int F {
+        get {
+            return f;
+        }
+        set {
+            f = value;
         }
     }
 

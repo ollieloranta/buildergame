@@ -15,6 +15,7 @@ public class WorldController : MonoBehaviour
     public Sprite grassSprite;
     public Sprite seaSprite;
     public Sprite peakSprite;
+    public GameObject treePrefab;
     public GameObject resourceController;
     public GameObject stateController;
 
@@ -49,7 +50,9 @@ public class WorldController : MonoBehaviour
         //world.generateRocks();
         world.RandomizeTilesWithHeight(-440, 490);
         world.SmoothHeights(5, 3);
+        world.GenerateRandomizedForest(5, 2);
 
+        float forestFactor = 0.75f;
         // Create tiles
         for (int x = 0; x < world.Width; x++){
             for (int y = 0; y < world.Length; y++){
@@ -67,6 +70,17 @@ public class WorldController : MonoBehaviour
                 else if (tile_data.Type == Tile.TileType.Grass) tile_sr.sprite = grassSprite;
                 else if (tile_data.Type == Tile.TileType.Sea) tile_sr.sprite = seaSprite;
                 else if (tile_data.Type == Tile.TileType.Peak) tile_sr.sprite = peakSprite;
+
+                if (tile_data.F > (60 - 15 * forestFactor)) {
+                    Debug.Log("Tree with f " + tile_data.F + " to " + x + ", " + y);
+                    GameObject new_tree = new GameObject();
+                    new_tree.name = "Tree_" + x + "_" + y;
+                    ResourceTree res = new_tree.AddComponent<ResourceTree>();
+                    Vector3 worldPosition = new Vector3(x, y, -0.5f);
+                    // Instantiate(PrefabByName("TreePrefab", "ObjectPrefabs"), worldPosition, treePrefab.transform.rotation);
+                    Instantiate(treePrefab, worldPosition, treePrefab.transform.rotation);
+                    tile_data.Contents = new_tree;
+                }
             }
         }
     }
@@ -172,5 +186,9 @@ public class WorldController : MonoBehaviour
         }
         Debug.Log(dataConfig);
         Debug.Log(dataConfig.buildingPrefabPath);
+    }
+    
+    public GameObject TileContents(int x, int y) {
+        return world.GetTile(x, y).Contents;
     }
 }

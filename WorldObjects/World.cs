@@ -48,7 +48,7 @@ public class World
         return tiles[x, y];
     }
 
-    public int MeanFiltered(int x, int y, int filterSize=3) {
+    public int MeanFiltered(int x, int y, int filterSize=3, bool forest=false) {
         int diff = (int) Mathf.Floor(filterSize / 2.0f);
         int tiles = 0;
         int tileSum = 0;
@@ -56,21 +56,31 @@ public class World
             for (int yy = y - diff; yy < y + diff; yy++) {
                 if (xx >= 0 && xx < width && yy >= 0 && yy < length) {
                     tiles += 1;
-                    tileSum += GetTile(xx, yy).H;
+                    if (forest) {
+                        tileSum += GetTile(xx, yy).F;
+                    }
+                    else {
+                        tileSum += GetTile(xx, yy).H;
+                    }
                 }
             }
         }
         return (int) Mathf.Round(tileSum / tiles);
     }
 
-    public int MedianFiltered(int x, int y, int filterSize=3) {
+    public int MedianFiltered(int x, int y, int filterSize=3, bool forest=false) {
         int diff = (int) Mathf.Floor(filterSize / 2.0f);
         int tiles = 0;
         List<int> tileValues = new List<int>();
         for (int xx = x - diff; xx < x + diff; xx++) {
             for (int yy = y - diff; yy < y + diff; yy++) {
                 if (xx >= 0 && xx < width && yy >= 0 && yy < length) {
-                    tileValues.Add(GetTile(xx, yy).H);
+                    if (forest) {
+                        tileValues.Add(GetTile(xx, yy).F);
+                    }
+                    else {
+                        tileValues.Add(GetTile(xx, yy).H);
+                    }
                     tiles += 1;
                 }
             }
@@ -78,12 +88,16 @@ public class World
         return tileValues[(int) Mathf.Round(tiles / 2)];
     }
 
-    public void SmoothHeights(int k=3, int n=2) {
+    public void SmoothHeights(int k=3, int n=2, bool forest=false) {
         for (int nn = 0; nn < n; nn++) {
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < length; y++) {
-                    GetTile(x, y).H = MeanFiltered(x, y, k);
-                    // GetTile(x, y).H = MedianFiltered(x, y, k);
+                    if (forest) {
+                        GetTile(x, y).F = MeanFiltered(x, y, k, forest);
+                    }
+                    else {
+                        GetTile(x, y).H = MeanFiltered(x, y, k);
+                    }
                 }
             }
         }
@@ -120,6 +134,28 @@ public class World
             }
         }
         Debug.Log("Tiles randomized");
+    }
+
+    public void GenerateRandomizedForest(int k=3, int n=3) {
+        for (int x = 0; x < width; x++){
+            for (int y = 0; y < length; y++){
+                int forestFactor = Random.Range(0, 100);
+                GetTile(x, y).F = forestFactor;
+            }
+        }
+        SmoothHeights(k, n, true);
+        RemoveInvalidTrees(7, 45);
+    }
+
+    void RemoveInvalidTrees(int minHeight, int maxHeight) {
+        for (int x = 0; x < width; x++){
+            for (int y = 0; y < length; y++){ 
+                Tile tile = GetTile(x, y);
+                if (tile.H < minHeight || tile.H > maxHeight) {
+                    tile.F = 0;
+                }
+            }
+        }
     }
 
     public void RandomizeTiles() {
