@@ -78,7 +78,18 @@ public class UIController : MonoBehaviour
                 worldPosition = ray.GetPoint(distance);
                 worldPosition[0] = Mathf.Round(worldPosition[0]);
                 worldPosition[1] = Mathf.Round(worldPosition[1]);
-                Tile selectedTile = wc.TileClicked(worldPosition);
+                if (wc.TileClicked(worldPosition))
+                {
+                    buildingPlaced = true;
+                    if (currentBuilding) {
+                        Destroy(currentBuilding);
+                    }
+                }
+            }
+        }
+        else if (Input.GetButtonDown("Fire2")) {
+            if (currentBuilding) {
+                Destroy(currentBuilding);
             }
             buildingPlaced = true;
         }
@@ -97,7 +108,7 @@ public class UIController : MonoBehaviour
                 worldPosition = ray.GetPoint(distance);
                 worldPosition[0] = Mathf.Round(worldPosition[0]);
                 worldPosition[1] = Mathf.Round(worldPosition[1]);
-                if (wc.TileContents((int) worldPosition[0], (int) worldPosition[1]) == null) {
+                if (wc.BuildAreaFree(worldPosition)) {
                     // Tile has contents
                     c.a = 1.0f;
                 }
@@ -145,6 +156,7 @@ public class UIController : MonoBehaviour
             if (wc.CanAfford(building)) {
                 wc.SelectBuilding(building);
                 currentBuilding = ((GameObject) Instantiate (wc.PrefabByName(building)));
+                currentBuilding.GetComponent<MeshFilter>().mesh.RecalculateBounds();
                 buildingPlaced = false;
                 closeBuildMenu();
             }

@@ -8,13 +8,13 @@ using UnityEngine;
 public class WorldController : MonoBehaviour
 {
 
-    public Sprite floorSprite;
-    public Sprite rockSprite;
-    public Sprite waterSprite;
-    public Sprite sandSprite;
-    public Sprite grassSprite;
-    public Sprite seaSprite;
-    public Sprite peakSprite;
+    public Texture groundTexture;
+    public Texture rockTexture;
+    public Texture waterTexture;
+    public Texture sandTexture;
+    public Texture seaTexture;
+    public Texture peakTexture;
+    public Texture grassTexture;
     public GameObject treePrefab;
     public GameObject resourceController;
     public GameObject stateController;
@@ -47,7 +47,6 @@ public class WorldController : MonoBehaviour
 
     void GenerateWorld() {
         world = new World();
-        //world.generateRocks();
         world.RandomizeTilesWithHeight(-440, 490);
         world.SmoothHeights(5, 3);
         world.GenerateRandomizedForest(5, 2);
@@ -56,28 +55,29 @@ public class WorldController : MonoBehaviour
         // Create tiles
         for (int x = 0; x < world.Width; x++){
             for (int y = 0; y < world.Length; y++){
-                GameObject new_tile = new GameObject();
+                GameObject new_tile = GameObject.CreatePrimitive(PrimitiveType.Plane);
                 new_tile.name = "Tile_" + x + "_" + y;
-                SpriteRenderer tile_sr = new_tile.AddComponent<SpriteRenderer>();
                 Tile tile_data = world.GetTile(x, y);
                 new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, 0 );
+                new_tile.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                new_tile.transform.eulerAngles = new Vector3(90, 0, 180);
 
                 // TODO: Move to Tile and search from file?
-                if (tile_data.Type == Tile.TileType.Ground) tile_sr.sprite = floorSprite;
-                else if (tile_data.Type == Tile.TileType.Rock) tile_sr.sprite = rockSprite;
-                else if (tile_data.Type == Tile.TileType.Water) tile_sr.sprite = waterSprite;
-                else if (tile_data.Type == Tile.TileType.Sand) tile_sr.sprite = sandSprite;
-                else if (tile_data.Type == Tile.TileType.Grass) tile_sr.sprite = grassSprite;
-                else if (tile_data.Type == Tile.TileType.Sea) tile_sr.sprite = seaSprite;
-                else if (tile_data.Type == Tile.TileType.Peak) tile_sr.sprite = peakSprite;
+                Material t = new_tile.GetComponent<MeshRenderer>().material;
+                if (tile_data.Type == Tile.TileType.Ground) t.mainTexture = groundTexture;
+                else if (tile_data.Type == Tile.TileType.Rock) t.mainTexture = rockTexture;
+                else if (tile_data.Type == Tile.TileType.Water) t.mainTexture = waterTexture;
+                else if (tile_data.Type == Tile.TileType.Sand) t.mainTexture = sandTexture;
+                else if (tile_data.Type == Tile.TileType.Grass) t.mainTexture = grassTexture;
+                else if (tile_data.Type == Tile.TileType.Sea) t.mainTexture = seaTexture;
+                else if (tile_data.Type == Tile.TileType.Peak) t.mainTexture = peakTexture;
 
                 if (tile_data.F > (60 - 15 * forestFactor)) {
                     Debug.Log("Tree with f " + tile_data.F + " to " + x + ", " + y);
                     GameObject new_tree = new GameObject();
                     new_tree.name = "Tree_" + x + "_" + y;
                     ResourceTree res = new_tree.AddComponent<ResourceTree>();
-                    Vector3 worldPosition = new Vector3(x, y, -0.5f);
-                    // Instantiate(PrefabByName("TreePrefab", "ObjectPrefabs"), worldPosition, treePrefab.transform.rotation);
+                    Vector3 worldPosition = new Vector3(x, y, 0);
                     Instantiate(treePrefab, worldPosition, treePrefab.transform.rotation);
                     tile_data.Contents = new_tree;
                 }
@@ -85,31 +85,31 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    public Tile TileClicked(Vector3 worldPosition) {
+    public bool TileClicked(Vector3 worldPosition) {
         Debug.Log("Tile clicked at: " + worldPosition);
         Tile clickedTile = world.GetTile((int) worldPosition[0], (int) worldPosition[1]);
         if (buildingSelected) {
-            buildBuilding(worldPosition);
+            return (buildBuilding(worldPosition));
         }
-        return clickedTile;
+        return true;
     }
 
     bool buildBuilding(Vector3 worldPosition) {
-        buildingSelected = false;
-        GameObject b = new GameObject();
-        Building building = b.AddComponent<Building>();
         BuildingModel bm = Array.Find(buildings, i => i.Name == selectedBuilding);
-        Debug.Log(bm);
-        building.setProperties(bm);
-        if (building.Cost < rc.Resources) {
-            Debug.Log("Building: " + building.Name);
-            Debug.Log(building.Cost);
-            worldPosition[0] += (building.Size.Item1 - 1) * 0.5f; // Larger objects do not fit coordinates
-            worldPosition[1] += (building.Size.Item2 - 1) * 0.5f;
-            Instantiate(PrefabByName(building.Name), worldPosition, Quaternion.identity);
+        if (!BuildAreaFree(worldPosition, bm)) {
+            return false;
+        }
+        buildingSelected = false;
+        if (bm.Cost < rc.Resources) {
+            worldPosition[0] += (bm.Size_x - 1) * 0.5f; // Larger objects do not fit coordinates
+            worldPosition[1] += (bm.Size_y - 1) * 0.5f;
+            GameObject b = ((GameObject) Instantiate(PrefabByName(bm.Name), worldPosition, Quaternion.identity));
+            Building building = b.AddComponent<Building>();
+            building.setProperties(bm);
+            b.GetComponent<MeshFilter>().mesh.RecalculateBounds();
             Debug.Log("Created " + building.Name + " at " + worldPosition);
             rc.AddResourceBuilding(b);
-            Debug.Log(b);
+            BuildingToTiles(b, worldPosition);
             builtBuildings.Add(b);
             return true;
         }
@@ -118,11 +118,37 @@ public class WorldController : MonoBehaviour
         }
     }
 
+    public bool BuildAreaFree(Vector3 worldPosition, BuildingModel bm=null)
+    {
+        if (bm == null)
+        {
+            bm = Array.Find(buildings, i => i.Name == selectedBuilding);
+        }
+        for (int x = 0; x < bm.Size_x; x++) {
+            for (int y = 0; y < bm.Size_y; y++) {
+                Tile t = world.GetTile((int) worldPosition[0] + x, (int) worldPosition[1] + y);
+                if (t.Contents)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    void BuildingToTiles(GameObject b, Vector3 worldPosition)
+    {
+        (int size_x, int size_y) = b.GetComponent<Building>().Size;
+        for (int x = 0; x < size_x; x++) {
+            for (int y = 0; y < size_y; y++) {
+                Tile t = world.GetTile((int) worldPosition[0] + x, (int) worldPosition[1] + y);
+                t.Contents = b;
+            }
+        }
+    }
+
     public bool buildingUnlocked(string b) {
         BuildingModel requiredBuilding = buildings.SingleOrDefault(item => item.Name == b);
-        Debug.Log(requiredBuilding);
-        Debug.Log(b);
-        Debug.Log(requiredBuilding.Requires);
         foreach (string req in requiredBuilding.Requires) {
             if (!builtBuildings.Find(i => i.GetComponent<Building>().Name == req)) {
                 Debug.Log("Requirement not found");
