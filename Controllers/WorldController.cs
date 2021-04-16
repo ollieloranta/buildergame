@@ -73,12 +73,10 @@ public class WorldController : MonoBehaviour
                 else if (tile_data.Type == Tile.TileType.Peak) t.mainTexture = peakTexture;
 
                 if (tile_data.F > (60 - 15 * forestFactor)) {
-                    Debug.Log("Tree with f " + tile_data.F + " to " + x + ", " + y);
-                    GameObject new_tree = new GameObject();
+                    Vector3 worldPosition = new Vector3(x, y, 0);
+                    GameObject new_tree = ((GameObject) Instantiate(treePrefab, worldPosition, treePrefab.transform.rotation));
                     new_tree.name = "Tree_" + x + "_" + y;
                     ResourceTree res = new_tree.AddComponent<ResourceTree>();
-                    Vector3 worldPosition = new Vector3(x, y, 0);
-                    Instantiate(treePrefab, worldPosition, treePrefab.transform.rotation);
                     tile_data.Contents = new_tree;
                 }
             }
@@ -127,7 +125,7 @@ public class WorldController : MonoBehaviour
         for (int x = 0; x < bm.Size_x; x++) {
             for (int y = 0; y < bm.Size_y; y++) {
                 Tile t = world.GetTile((int) worldPosition[0] + x, (int) worldPosition[1] + y);
-                if (t.Contents)
+                if (t.Contents || t.H < 0  || t.H > 50)
                 {
                     return false;
                 }
