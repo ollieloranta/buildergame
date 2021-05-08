@@ -11,6 +11,7 @@ public class Tile
     int y;
     int h;
     int f;
+    float map_h;
     TileType type;
     GameObject contents;
 
@@ -21,6 +22,7 @@ public class Tile
         this.y = y;
         this.h = h;
         this.f = f;
+        updateMapHeight();
     }
 
     public TileType Type {
@@ -51,6 +53,7 @@ public class Tile
         set {
             h = value;
             setTileType();
+            updateMapHeight();
         }
     }
     
@@ -60,6 +63,12 @@ public class Tile
         }
         set {
             f = value;
+        }
+    }
+
+    public float MapH {
+        get {
+            return map_h;
         }
     }
 
@@ -80,5 +89,17 @@ public class Tile
         else if (h < 50) type = TileType.Ground;
         else if (h < 75) type = TileType.Rock;
         else type = TileType.Peak;
+    }
+
+    void updateMapHeight() {
+        if (h < 0) {
+            map_h = 0.1f;
+        }
+        else if (h < 40) {
+            map_h = 0.2f;
+        }
+        else {
+            map_h = h * h * 0.00015f;
+        }
     }
 }

@@ -108,12 +108,12 @@ public class UIController : MonoBehaviour
                 worldPosition = ray.GetPoint(distance);
                 worldPosition[0] = Mathf.Round(worldPosition[0]);
                 worldPosition[1] = Mathf.Round(worldPosition[1]);
+                worldPosition[2] = 0.1f;
                 if (wc.BuildAreaFree(worldPosition)) {
-                    // Tile has contents
                     c.a = 1.0f;
                 }
                 else {
-                    Debug.Log("Over tree");
+                    // Tile has contents
                     c.a = 0.5f;
                 }
                 currentBuilding.GetComponent<Renderer>().material.color = c;

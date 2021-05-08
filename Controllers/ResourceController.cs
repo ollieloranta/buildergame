@@ -15,7 +15,8 @@ public class ResourceController : MonoBehaviour
     void Update() {
         foreach (var b in resourceBuildings) {
             Building bScript = b.GetComponent<Building>();
-            totalResource += bScript.Resources * Time.deltaTime;
+            totalResource += bScript.consumeResource();
+            // totalResource += bScript.Resources * Time.deltaTime;
         }
     }
 

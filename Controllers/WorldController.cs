@@ -55,12 +55,20 @@ public class WorldController : MonoBehaviour
         // Create tiles
         for (int x = 0; x < world.Width; x++){
             for (int y = 0; y < world.Length; y++){
+                // 2D height
                 GameObject new_tile = GameObject.CreatePrimitive(PrimitiveType.Plane);
                 new_tile.name = "Tile_" + x + "_" + y;
                 Tile tile_data = world.GetTile(x, y);
                 new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, 0 );
                 new_tile.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
                 new_tile.transform.eulerAngles = new Vector3(90, 0, 180);
+
+                // 3D height
+                // GameObject new_tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                // new_tile.name = "Tile_" + x + "_" + y;
+                // Tile tile_data = world.GetTile(x, y);
+                // new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, -tile_data.MapH / 2);
+                // new_tile.transform.localScale = new Vector3(1, 1, tile_data.MapH);
 
                 // TODO: Move to Tile and search from file?
                 Material t = new_tile.GetComponent<MeshRenderer>().material;
@@ -76,6 +84,7 @@ public class WorldController : MonoBehaviour
                     Vector3 worldPosition = new Vector3(x, y, 0);
                     GameObject new_tree = ((GameObject) Instantiate(treePrefab, worldPosition, treePrefab.transform.rotation));
                     new_tree.name = "Tree_" + x + "_" + y;
+                    new_tree.tag = "Tree";
                     ResourceTree res = new_tree.AddComponent<ResourceTree>();
                     tile_data.Contents = new_tree;
                 }
@@ -103,7 +112,7 @@ public class WorldController : MonoBehaviour
             worldPosition[1] += (bm.Size_y - 1) * 0.5f;
             GameObject b = ((GameObject) Instantiate(PrefabByName(bm.Name), worldPosition, Quaternion.identity));
             Building building = b.AddComponent<Building>();
-            building.setProperties(bm);
+            building.setProperties(bm, (int)worldPosition[0], (int)worldPosition[1], world);
             b.GetComponent<MeshFilter>().mesh.RecalculateBounds();
             Debug.Log("Created " + building.Name + " at " + worldPosition);
             rc.AddResourceBuilding(b);

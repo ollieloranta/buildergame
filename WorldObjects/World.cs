@@ -124,10 +124,10 @@ public class World
                     newMax = 45;
                 }
                 else if (x * y < 100 || (x < 10 || y < 10)) { // Southwest corner sea
-                    newMin -= 200;
+                    newMin -= 150;
                 }
                 else if (x * y > 6000 || (x > 93 || y > 93)) { // Northeast corner mountain
-                    newMax += 300;
+                    newMax += 80;
                 }
                 int newHeight = Random.Range(newMin, newMax);
                 GetTile(x, y).H = newHeight;
