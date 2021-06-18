@@ -72,18 +72,18 @@ public class Building : MonoBehaviour
             for (int y = m_y - m_range; y < m_y + m_range; y++)
             {
                 Tile t = world.GetTile(x, y);
-                Debug.Log((bool) t.Contents);
+                // Debug.Log((bool) t.Contents);
                 if (t.Contents)
                 {
                     if (t.Contents.tag == m_resourceType)
                     {
                         m_resources.Add(t.Contents);
-                        Debug.Log("Added tree successfully");
+                        // Debug.Log("Added tree successfully");
                     }
                 }
             } 
         }
-        Debug.Log(m_resources);
+        // Debug.Log(m_resources);
         Debug.Log("Found " + m_resources.Count + " Trees in area.");
     }
 
@@ -103,7 +103,7 @@ public class Building : MonoBehaviour
             m_resources.RemoveAt(0);
             return consumed + consumeResource(gatherAmount - consumed);
         }
-        Debug.Log("Generated " + consumed + " resources.");
+        // Debug.Log("Generated " + consumed + " resources.");
         return consumed;
     }
 }

@@ -18,7 +18,6 @@ public class Resource : MonoBehaviour
         }
     }
     public float consumeResource(float amount) {
-        Debug.Log("Consuming " + amount + " / " + m_resources);
         if (amount > m_resources)
         {
             Destroy(gameObject, 1.0f);

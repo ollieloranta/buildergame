@@ -108,7 +108,6 @@ public class UIController : MonoBehaviour
                 worldPosition = ray.GetPoint(distance);
                 worldPosition[0] = Mathf.Round(worldPosition[0]);
                 worldPosition[1] = Mathf.Round(worldPosition[1]);
-                worldPosition[2] = 0.1f;
                 if (wc.BuildAreaFree(worldPosition)) {
                     c.a = 1.0f;
                 }
@@ -116,9 +115,11 @@ public class UIController : MonoBehaviour
                     // Tile has contents
                     c.a = 0.5f;
                 }
+                float tileHeight = wc.TileHeight(worldPosition);
                 currentBuilding.GetComponent<Renderer>().material.color = c;
                 worldPosition[0] += (currentBuilding.transform.localScale[0] - 1) * 0.5f;
                 worldPosition[1] += (currentBuilding.transform.localScale[1] - 1) * 0.5f;
+                worldPosition[2] -= tileHeight;
                 currentBuilding.transform.position = worldPosition;
             }
         }

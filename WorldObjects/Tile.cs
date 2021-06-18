@@ -95,11 +95,11 @@ public class Tile
         if (h < 0) {
             map_h = 0.1f;
         }
-        else if (h < 40) {
+        else if (h <= 40) {
             map_h = 0.2f;
         }
         else {
-            map_h = h * h * 0.00015f;
+            map_h = (h / 2) * Mathf.Log(h - 38.5f) / 100 + 0.2f;
         }
     }
 }

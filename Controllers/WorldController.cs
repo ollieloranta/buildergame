@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using UnityEngine;
+using Random=UnityEngine.Random;
 
 public class WorldController : MonoBehaviour
 {
@@ -56,19 +57,19 @@ public class WorldController : MonoBehaviour
         for (int x = 0; x < world.Width; x++){
             for (int y = 0; y < world.Length; y++){
                 // 2D height
-                GameObject new_tile = GameObject.CreatePrimitive(PrimitiveType.Plane);
-                new_tile.name = "Tile_" + x + "_" + y;
-                Tile tile_data = world.GetTile(x, y);
-                new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, 0 );
-                new_tile.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-                new_tile.transform.eulerAngles = new Vector3(90, 0, 180);
-
-                // 3D height
-                // GameObject new_tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                // GameObject new_tile = GameObject.CreatePrimitive(PrimitiveType.Plane);
                 // new_tile.name = "Tile_" + x + "_" + y;
                 // Tile tile_data = world.GetTile(x, y);
-                // new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, -tile_data.MapH / 2);
-                // new_tile.transform.localScale = new Vector3(1, 1, tile_data.MapH);
+                // new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, 0 );
+                // new_tile.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                // new_tile.transform.eulerAngles = new Vector3(90, 0, 180);
+
+                // 3D height
+                GameObject new_tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                new_tile.name = "Tile_" + x + "_" + y;
+                Tile tile_data = world.GetTile(x, y);
+                new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, -tile_data.MapH / 2);
+                new_tile.transform.localScale = new Vector3(1, 1, tile_data.MapH);
 
                 // TODO: Move to Tile and search from file?
                 Material t = new_tile.GetComponent<MeshRenderer>().material;
@@ -81,8 +82,11 @@ public class WorldController : MonoBehaviour
                 else if (tile_data.Type == Tile.TileType.Peak) t.mainTexture = peakTexture;
 
                 if (tile_data.F > (60 - 15 * forestFactor)) {
-                    Vector3 worldPosition = new Vector3(x, y, 0);
-                    GameObject new_tree = ((GameObject) Instantiate(treePrefab, worldPosition, treePrefab.transform.rotation));
+                    Vector3 worldPosition = new Vector3(x, y, -tile_data.MapH);
+                    float treeXRot = Random.Range(0f, 1f);
+                    Quaternion treeRot = treePrefab.transform.rotation;
+                    treeRot.z = treeXRot;
+                    GameObject new_tree = ((GameObject) Instantiate(treePrefab, worldPosition, treeRot));
                     new_tree.name = "Tree_" + x + "_" + y;
                     new_tree.tag = "Tree";
                     ResourceTree res = new_tree.AddComponent<ResourceTree>();
@@ -108,10 +112,13 @@ public class WorldController : MonoBehaviour
         }
         buildingSelected = false;
         if (bm.Cost < rc.Resources) {
-            worldPosition[0] += (bm.Size_x - 1) * 0.5f; // Larger objects do not fit coordinates
-            worldPosition[1] += (bm.Size_y - 1) * 0.5f;
             GameObject b = ((GameObject) Instantiate(PrefabByName(bm.Name), worldPosition, Quaternion.identity));
             Building building = b.AddComponent<Building>();
+            float buildingH = lowestPoint(bm, worldPosition);
+            worldPosition[0] += (bm.Size_x - 1) * 0.5f; // Larger objects do not fit coordinates
+            worldPosition[1] += (bm.Size_y - 1) * 0.5f;
+            worldPosition[2] -= buildingH;
+            building.transform.position = worldPosition;
             building.setProperties(bm, (int)worldPosition[0], (int)worldPosition[1], world);
             b.GetComponent<MeshFilter>().mesh.RecalculateBounds();
             Debug.Log("Created " + building.Name + " at " + worldPosition);
@@ -131,6 +138,9 @@ public class WorldController : MonoBehaviour
         {
             bm = Array.Find(buildings, i => i.Name == selectedBuilding);
         }
+        float smallest = 51;
+        float highest = 0;
+        float maxHeightDiff = 0.1f;
         for (int x = 0; x < bm.Size_x; x++) {
             for (int y = 0; y < bm.Size_y; y++) {
                 Tile t = world.GetTile((int) worldPosition[0] + x, (int) worldPosition[1] + y);
@@ -138,9 +148,34 @@ public class WorldController : MonoBehaviour
                 {
                     return false;
                 }
+                if (t.H < smallest)
+                    smallest = t.MapH;
+                if (t.H > highest)
+                    highest = t.MapH;
             }
         }
+        if (Mathf.Abs(highest - smallest) > maxHeightDiff)
+            return false;
         return true;
+    }
+
+    float lowestPoint(BuildingModel bm, Vector3 worldPosition)
+    {
+        float lowest = 1000f;
+        for (int x = 0; x < bm.Size_x; x++) {
+            for (int y = 0; y < bm.Size_y; y++) {
+                Tile t = world.GetTile((int) worldPosition[0] + x, (int) worldPosition[1] + y);
+                if (t.MapH < lowest)
+                    lowest = t.MapH;
+            }
+        }
+        return lowest;
+    }
+
+    public float TileHeight(Vector3 worldPosition)
+    {
+        Tile t = world.GetTile((int) worldPosition[0], (int) worldPosition[1]);
+        return t.MapH;
     }
 
     void BuildingToTiles(GameObject b, Vector3 worldPosition)
