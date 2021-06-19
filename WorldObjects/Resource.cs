@@ -2,10 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Resource : MonoBehaviour
+public class Resource : WorldObject
 {
     protected string m_resourceName = "Resource";
     protected float m_resources = 0f;
+
+    public override Dictionary<string, string> getObjectContents() {
+        var contents = new Dictionary<string, string>();
+        contents["Name"] = m_resourceName;
+        contents["Resources"] = m_resources.ToString();
+        return contents;
+    }
 
     public float Resources {
         get {

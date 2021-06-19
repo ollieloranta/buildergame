@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Building : MonoBehaviour
+public class Building : WorldObject
 {
     string m_buildingName;
     int m_cost;
@@ -19,6 +19,18 @@ public class Building : MonoBehaviour
     float m_gatherSpeed;
     
     List<GameObject> m_resources;
+
+    public override Dictionary<string, string> getObjectContents() {
+        var contents = new Dictionary<string, string>();
+        contents["Name"] = m_buildingName;
+        if (isGatherer) {
+            contents["Gathering"] = m_resourceType.ToString();
+            contents["Gather rate"] = m_gatherSpeed.ToString();
+            contents["Gather range"] = m_range.ToString();
+        }
+        return contents;
+    }
+
     public void setProperties(BuildingModel bm, int x, int y, World world) {
         gameObject.tag = "Building";
         m_x = x;

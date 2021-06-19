@@ -17,6 +17,7 @@ public class UIController : MonoBehaviour
     public Text resourceText;
     public Canvas UICanvas;
     public GameObject buttonPanel;
+    public GameObject popUpPanel;
     public Button buildBuildingButton;
     public Button buildMenuButton;
 
@@ -80,9 +81,13 @@ public class UIController : MonoBehaviour
                 worldPosition[1] = Mathf.Round(worldPosition[1]);
                 if (wc.TileClicked(worldPosition))
                 {
+                    closeContentsMenu();
                     buildingPlaced = true;
                     if (currentBuilding) {
                         Destroy(currentBuilding);
+                    }
+                    else {
+                        openContentsMenu(wc.TileContents((int)worldPosition[0], (int)worldPosition[1]));
                     }
                 }
             }
@@ -150,6 +155,31 @@ public class UIController : MonoBehaviour
             GameObject.Destroy(child.gameObject);
         }
         buildMenuOpen = false;
+    }
+
+    void openContentsMenu(GameObject contents) {
+        if (contents) {
+            popUpPanel.GetComponent<Image>().enabled = true;
+            Dictionary<string, string> info = contents.GetComponent<WorldObject>().getInformation();
+            foreach(KeyValuePair<string, string> kv in info)
+            {
+                Debug.Log(kv.Key);
+                Debug.Log(kv.Value);
+                GameObject textObj = new GameObject("popUpText"+kv.Key);
+                textObj.transform.SetParent(popUpPanel.transform);
+                Text infoText = textObj.AddComponent<Text>();
+                infoText.text = kv.Key + ": " + kv.Value;
+                textObj.GetComponent<Text>().font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            }
+        }
+
+    }
+    
+    void closeContentsMenu() {
+        foreach (Transform child in popUpPanel.transform) {
+            GameObject.Destroy(child.gameObject);
+        }
+        popUpPanel.GetComponent<Image>().enabled = false;
     }
 
     void BuildButtonClick(string building) {
