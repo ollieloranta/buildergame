@@ -12,6 +12,8 @@ public class Building : WorldObject
     int m_sizeX;
     int m_sizeY;
     string[] m_requirements;
+    int m_workers;
+    int m_maxWorkers;
     bool isGatherer;
     
     int m_range;
@@ -24,6 +26,7 @@ public class Building : WorldObject
         var contents = new Dictionary<string, string>();
         contents["Name"] = m_buildingName;
         if (isGatherer) {
+            contents["Workers"] = m_workers.ToString();
             contents["Gathering"] = m_resourceType.ToString();
             contents["Gather rate"] = m_gatherSpeed.ToString();
             contents["Gather range"] = m_range.ToString();
@@ -43,6 +46,8 @@ public class Building : WorldObject
         m_requirements = bm.Requires;
         isGatherer = bm.IsGatherer;
         if (isGatherer) {
+            m_workers = 0;
+            m_maxWorkers = 3;
             m_range = bm.ResourceRange;
             m_gatherSpeed = bm.ResourceSpeed;
             m_resourceType = bm.ResourceType;
@@ -74,6 +79,24 @@ public class Building : WorldObject
     public string[] Requirements {
         get {
             return m_requirements;
+        }
+    }
+    public int Workers {
+        get {
+            return m_workers;
+        }
+    }
+    public int MaxWorkers {
+        get {
+            return m_maxWorkers;
+        }
+    }
+    public void addWorkers(int n = 1) {
+        if (m_workers < m_maxWorkers) {
+            m_workers += n;
+            if (m_workers > m_maxWorkers) {
+                m_workers = m_maxWorkers;
+            }
         }
     }
     void findResources(World world){

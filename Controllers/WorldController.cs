@@ -71,6 +71,8 @@ public class WorldController : MonoBehaviour
                 new_tile.transform.position = new Vector3( tile_data.X, tile_data.Y, -tile_data.MapH / 2);
                 new_tile.transform.localScale = new Vector3(1, 1, tile_data.MapH);
 
+                new_tile.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
                 // TODO: Move to Tile and search from file?
                 Material t = new_tile.GetComponent<MeshRenderer>().material;
                 if (tile_data.Type == Tile.TileType.Ground) t.mainTexture = groundTexture;
@@ -83,9 +85,12 @@ public class WorldController : MonoBehaviour
 
                 if (tile_data.F > (60 - 15 * forestFactor)) {
                     Vector3 worldPosition = new Vector3(x, y, -tile_data.MapH);
-                    float treeXRot = Random.Range(0f, 1f);
+                    float randomJitter = Random.Range(-0.15f, 0.15f);
+                    worldPosition.x += randomJitter;
+                    worldPosition.y += randomJitter;
+                    float treeZRot = Random.Range(0f, 1f);
                     Quaternion treeRot = treePrefab.transform.rotation;
-                    treeRot.z = treeXRot;
+                    treeRot.z = treeZRot;
                     GameObject new_tree = ((GameObject) Instantiate(treePrefab, worldPosition, treeRot));
                     new_tree.name = "Tree_" + x + "_" + y;
                     new_tree.tag = "Tree";

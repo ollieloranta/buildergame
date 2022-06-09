@@ -19,6 +19,7 @@ public class UIController : MonoBehaviour
     public GameObject buttonPanel;
     public GameObject popUpPanel;
     public Button buildBuildingButton;
+    public Button addWorkerButton;
     public Button buildMenuButton;
 
     bool buildMenuOpen;
@@ -171,8 +172,15 @@ public class UIController : MonoBehaviour
                 infoText.text = kv.Key + ": " + kv.Value;
                 textObj.GetComponent<Text>().font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
             }
+            if (info["Name"] == "Factory") {
+                Button button = (Button)Instantiate(addWorkerButton); // , new Vector3(50, 50, 0), Quaternion.identity);
+                HorizontalLayoutGroup hg = button.gameObject.AddComponent<HorizontalLayoutGroup>();
+                hg.SetLayoutHorizontal();
+                button.transform.SetParent(popUpPanel.transform);
+                button.GetComponent<Button>().onClick.AddListener(() => {addWorkerClick(contents);});
+                button.transform.GetChild(0).GetComponent<Text>().text = "Add worker";
+            }
         }
-
     }
     
     void closeContentsMenu() {
@@ -180,6 +188,13 @@ public class UIController : MonoBehaviour
             GameObject.Destroy(child.gameObject);
         }
         popUpPanel.GetComponent<Image>().enabled = false;
+    }
+
+    void addWorkerClick(GameObject building) {
+        building.GetComponent<Building>().addWorkers();
+        // Refresh (easier way?)
+        closeContentsMenu();
+        openContentsMenu(building);
     }
 
     void BuildButtonClick(string building) {
