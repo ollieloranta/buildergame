@@ -6,6 +6,7 @@ public class Resource : WorldObject
 {
     protected string m_resourceName = "Resource";
     protected float m_resources = 0f;
+    bool m_resourceInUse = false;
 
     public override Dictionary<string, string> getObjectContents() {
         var contents = new Dictionary<string, string>();
@@ -23,6 +24,14 @@ public class Resource : WorldObject
         get {
             return m_resourceName;
         }
+    }
+    public bool InUse {
+        get {
+            return m_resourceInUse;
+        }
+    }
+    public void resourceLock() {
+        m_resourceInUse = !m_resourceInUse;
     }
     public float consumeResource(float amount) {
         if (amount > m_resources)

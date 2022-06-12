@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ResourceController : MonoBehaviour
 {
-    float totalResource = 100f;
+    float totalResource = 1000f;
     List<GameObject> resourceBuildings;
 
     void Start() {

@@ -92,6 +92,7 @@ public class WorldController : MonoBehaviour
                     Quaternion treeRot = treePrefab.transform.rotation;
                     treeRot.z = treeZRot;
                     GameObject new_tree = ((GameObject) Instantiate(treePrefab, worldPosition, treeRot));
+                    new_tree.AddComponent<BoxCollider>(); // Find resources based on colliders
                     new_tree.name = "Tree_" + x + "_" + y;
                     new_tree.tag = "Tree";
                     ResourceTree res = new_tree.AddComponent<ResourceTree>();

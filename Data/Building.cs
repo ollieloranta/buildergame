@@ -15,12 +15,12 @@ public class Building : WorldObject
     int m_workers;
     int m_maxWorkers;
     bool isGatherer;
+    bool m_isActive;
     
     int m_range;
     string m_resourceType;
     float m_gatherSpeed;
-    
-    List<GameObject> m_resources;
+    GameObject m_currentResource;
 
     public override Dictionary<string, string> getObjectContents() {
         var contents = new Dictionary<string, string>();
@@ -44,6 +44,7 @@ public class Building : WorldObject
         m_sizeX = bm.Size_x;
         m_sizeY = bm.Size_y;
         m_requirements = bm.Requires;
+        m_isActive = false;
         isGatherer = bm.IsGatherer;
         if (isGatherer) {
             m_workers = 0;
@@ -51,8 +52,7 @@ public class Building : WorldObject
             m_range = bm.ResourceRange;
             m_gatherSpeed = bm.ResourceSpeed;
             m_resourceType = bm.ResourceType;
-            m_resources = new List<GameObject>();
-            findResources(world);
+            findResource();
         }
     }
 
@@ -97,47 +97,47 @@ public class Building : WorldObject
             if (m_workers > m_maxWorkers) {
                 m_workers = m_maxWorkers;
             }
+            findResource();
         }
     }
-    void findResources(World world){
+    void findResource(){
+        Debug.Log("Find resource");
         if (!isGatherer)
             return;
-        for (int x = m_x - m_range; x < m_x + m_range; x++)
-        {
-            for (int y = m_y - m_range; y < m_y + m_range; y++)
-            {
-                Tile t = world.GetTile(x, y);
-                // Debug.Log((bool) t.Contents);
-                if (t.Contents)
-                {
-                    if (t.Contents.tag == m_resourceType)
-                    {
-                        m_resources.Add(t.Contents);
-                        // Debug.Log("Added tree successfully");
-                    }
+        Collider[] hitColliders = Physics.OverlapSphere(new Vector3(m_x, m_y, 0), m_range);
+        GameObject resourceObj;
+
+        foreach (var hitCollider in hitColliders) {
+            resourceObj = hitCollider.gameObject;
+            Debug.Log(resourceObj.name);
+            if (resourceObj.tag == m_resourceType) {
+                Resource resource = resourceObj.GetComponent<Resource>();
+                // Just grab the first found one
+                if (!resource.InUse){
+                    resource.resourceLock();
+                    m_currentResource = resourceObj;
+                    Debug.Log("Gathering from resource " + resource.name);
+                    m_isActive = true;
+                    return;
                 }
-            } 
+            }
         }
-        // Debug.Log(m_resources);
-        Debug.Log("Found " + m_resources.Count + " Trees in area.");
+        // Out of resources
+        Debug.Log("No resources found");
+        m_isActive = false;
     }
 
     public float consumeResource(float remaining = 0f) {
-        if (!isGatherer)
-            return 0f;
-        // Recursively removes resources from nearby resource objects until enough is gathered
-        if (m_resources.Count == 0)
-        {
+        if (!isGatherer || !m_isActive) {
             return 0f;
         }
-        GameObject r = m_resources[0];
         float gatherAmount = m_gatherSpeed * Time.deltaTime;
-        float consumed = r.GetComponent<Resource>().consumeResource(gatherAmount);
+        float consumed = m_currentResource.GetComponent<Resource>().consumeResource(gatherAmount);
         if (consumed < gatherAmount)
         {
-            m_resources.RemoveAt(0);
-            return consumed + consumeResource(gatherAmount - consumed);
+            findResource();
         }
+        
         // Debug.Log("Generated " + consumed + " resources.");
         return consumed;
     }
