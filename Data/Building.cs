@@ -12,7 +12,7 @@ public class Building : WorldObject
     int m_sizeX;
     int m_sizeY;
     string[] m_requirements;
-    int m_workers;
+    List<GameObject> m_workers;
     int m_maxWorkers;
     bool isGatherer;
     bool m_isActive;
@@ -26,7 +26,6 @@ public class Building : WorldObject
         var contents = new Dictionary<string, string>();
         contents["Name"] = m_buildingName;
         if (isGatherer) {
-            contents["Workers"] = m_workers.ToString();
             contents["Gathering"] = m_resourceType.ToString();
             contents["Gather rate"] = m_gatherSpeed.ToString();
             contents["Gather range"] = m_range.ToString();
@@ -46,9 +45,9 @@ public class Building : WorldObject
         m_requirements = bm.Requires;
         m_isActive = false;
         isGatherer = bm.IsGatherer;
+        m_maxWorkers = bm.MaxWorkers;
+        m_workers = new List<GameObject>();;
         if (isGatherer) {
-            m_workers = 0;
-            m_maxWorkers = 3;
             m_range = bm.ResourceRange;
             m_gatherSpeed = bm.ResourceSpeed;
             m_resourceType = bm.ResourceType;
@@ -76,14 +75,29 @@ public class Building : WorldObject
             return (m_sizeX, m_sizeY);
         }
     }
+    public int X {
+        get {
+            return m_x;
+        }
+    }
+    public int Y {
+        get {
+            return m_y;
+        }
+    }
     public string[] Requirements {
         get {
             return m_requirements;
         }
     }
-    public int Workers {
+    public List<GameObject> Workers {
         get {
             return m_workers;
+        }
+    }
+    public int NumWorkers {
+        get {
+            return m_workers.Count;
         }
     }
     public int MaxWorkers {
@@ -91,16 +105,14 @@ public class Building : WorldObject
             return m_maxWorkers;
         }
     }
-    public void addWorkers(int n = 1) {
-        if (m_workers < m_maxWorkers) {
-            m_workers += n;
-            if (m_workers > m_maxWorkers) {
-                m_workers = m_maxWorkers;
-            }
+    public bool addWorker(GameObject worker) {
+        m_workers.Add(worker);
+        if (isGatherer) {
             findResource();
         }
+        return true;
     }
-    void findResource(){
+    void findResource() {
         Debug.Log("Find resource");
         if (!isGatherer)
             return;
@@ -131,7 +143,7 @@ public class Building : WorldObject
         if (!isGatherer || !m_isActive) {
             return 0f;
         }
-        float gatherAmount = m_gatherSpeed * Time.deltaTime;
+        float gatherAmount = m_gatherSpeed * Time.deltaTime * NumWorkers;
         float consumed = m_currentResource.GetComponent<Resource>().consumeResource(gatherAmount);
         if (consumed < gatherAmount)
         {

@@ -1112,6 +1112,7 @@ MonoBehaviour:
   peakTexture: {fileID: 2800000, guid: a095bd87c52d5e44e9096fa480d0ac00, type: 3}
   grassTexture: {fileID: 2800000, guid: 579681bf130a2904faabfe9211eb8751, type: 3}
   treePrefab: {fileID: 8641739870554800984, guid: aa481897b2599c04b96fb4101afe1f35, type: 3}
+  workerPrefab: {fileID: 0}
   resourceController: {fileID: 1622537454}
   stateController: {fileID: 1242802927}
 --- !u!4 &1508400978
@@ -1157,6 +1158,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b792de61ab27fc4e8ce30023645b629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  workerPrefab: {fileID: 7501568182897973154, guid: 99b5b6a6eb6804d42995cc2839245588, type: 3}
 --- !u!4 &1622537456
 Transform:
   m_ObjectHideFlags: 0

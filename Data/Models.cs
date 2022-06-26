@@ -14,6 +14,7 @@ public class BuildingModel
     public string ResourceType;
     public int ResourceRange;
     public int ResourceSpeed;
+    public int MaxWorkers;
 }
 
 [Serializable]

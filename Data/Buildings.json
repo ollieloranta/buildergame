@@ -1,6 +1,7 @@
 {
     "Items": [
-        {"Name": "House", "Cost": 20, "Resources": 0.0, "Size_x": 1, "Size_y": 1, "Requires": [], "IsGatherer": false},
+        {"Name": "Center", "Cost": 0, "Resources": 0.0, "Size_x": 2, "Size_y": 2, "Requires": [], "IsGatherer": false, "MaxWorkers": 10},
+        {"Name": "House", "Cost": 20, "Resources": 0.0, "Size_x": 1, "Size_y": 1, "Requires": ["Center"], "IsGatherer": false},
         {"Name": "Factory", "Cost": 50, "Resources": 10, "Size_x": 2, "Size_y": 1, "Requires": ["House"], "IsGatherer": true, "GatherRate": 30, "ResourceType": "Tree", "ResourceRange": 5, "ResourceSpeed": 10, "MaxWorkers": 3},
         {"Name": "Temple", "Cost": 100, "Resources": 10, "Size_x": 2, "Size_y": 2, "Requires": ["Factory"], "IsGatherer": false}
     ]

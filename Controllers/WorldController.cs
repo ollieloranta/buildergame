@@ -17,6 +17,7 @@ public class WorldController : MonoBehaviour
     public Texture peakTexture;
     public Texture grassTexture;
     public GameObject treePrefab;
+    public GameObject workerPrefab;
     public GameObject resourceController;
     public GameObject stateController;
 
@@ -118,7 +119,8 @@ public class WorldController : MonoBehaviour
         }
         buildingSelected = false;
         if (bm.Cost < rc.Resources) {
-            GameObject b = ((GameObject) Instantiate(PrefabByName(bm.Name), worldPosition, Quaternion.identity));
+            GameObject prefab = PrefabByName(bm.Name);
+            GameObject b = ((GameObject) Instantiate(prefab, worldPosition, prefab.transform.rotation));
             Building building = b.AddComponent<Building>();
             float buildingH = lowestPoint(bm, worldPosition);
             worldPosition[0] += (bm.Size_x - 1) * 0.5f; // Larger objects do not fit coordinates
@@ -131,6 +133,15 @@ public class WorldController : MonoBehaviour
             rc.AddResourceBuilding(b);
             BuildingToTiles(b, worldPosition);
             builtBuildings.Add(b);
+            Debug.Log(bm.Name);
+            Debug.Log(building.MaxWorkers);
+            if (bm.Name == "Center") {
+                Debug.Log(b);
+                for (int i = 0; i < building.MaxWorkers; i++) {
+                    rc.addWorker(b, true);
+                }
+                buildings = buildings.Where(bl => bl.Name != bm.Name).ToArray();
+            }
             return true;
         }
         else {
@@ -247,8 +258,12 @@ public class WorldController : MonoBehaviour
         return bm;
     }
 
-    public BuildingModel[] getAllBuildings() {
-        return buildings;
+    public BuildingModel[] getAllBuildings(bool unlocked=true) {
+        if (!unlocked) {
+            return buildings;
+        }
+        BuildingModel[] unlocked_b = buildings.Where(x => buildingUnlocked(x.Name)).ToArray();
+        return unlocked_b;
     }
 
     void LoadDataConfigJson() {

@@ -170,6 +170,7 @@ public class UIController : MonoBehaviour
     }
 
     void openBuildMenu() {
+        buildMenuButton.gameObject.SetActive(false);
         BuildingModel[] buildings = wc.getAllBuildings();
         foreach (BuildingModel b in buildings) {
             Button button = (Button)Instantiate(buildBuildingButton);
@@ -184,6 +185,7 @@ public class UIController : MonoBehaviour
         foreach (Transform child in buttonPanel.transform) {
             GameObject.Destroy(child.gameObject);
         }
+        buildMenuButton.gameObject.SetActive(true);
         buildMenuOpen = false;
     }
 
@@ -220,7 +222,7 @@ public class UIController : MonoBehaviour
     }
 
     void addWorkerClick(GameObject building) {
-        if (!rc.addWorker(building)) {
+        if (!rc.GetComponent<Building>().addWorker(building)) {
             warningPopUp("No workers available");
         }
         updateWorkerText();
