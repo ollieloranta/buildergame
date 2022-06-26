@@ -15,9 +15,11 @@ public class UIController : MonoBehaviour
 
     StateController ac;
     public Text resourceText;
+    public Text workerText;
     public Canvas UICanvas;
     public GameObject buttonPanel;
     public GameObject popUpPanel;
+    public GameObject warningPanel;
     public Button buildBuildingButton;
     public Button addWorkerButton;
     public Button buildMenuButton;
@@ -35,6 +37,7 @@ public class UIController : MonoBehaviour
         ac = stateController.GetComponent<StateController>();
         CreateButtonClicks();
         closeBuildMenu();
+        updateWorkerText();
     }
 
     void LateUpdate()
@@ -64,6 +67,32 @@ public class UIController : MonoBehaviour
             }
         }
     }
+
+    void updateWorkerText() {
+        workerText.text = System.String.Format("Workers: {0} / {1}", rc.Workers, rc.MaxWorkers);
+    }
+
+    void warningPopUp(string text, float popupTime=2f) {
+        IEnumerator showMessage(string text, float popupTime) {
+            Debug.Log("Warning :D");
+            warningPanel.SetActive(true);
+            GameObject warning = new GameObject("warningText");
+            Text warningText = warning.AddComponent<Text>();
+            warningText.text = text;
+            warningText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            warningText.fontSize = 20;
+            warningText.color = Color.red;
+            warning.transform.SetParent(warningPanel.transform);
+            yield return new WaitForSeconds(popupTime);
+            if (warningPanel.transform.childCount == 1) {
+                warningPanel.SetActive(false);
+            }
+            Destroy(warning);
+        }
+        StartCoroutine(showMessage(text, popupTime));
+    }
+
+
 
     void ListenMapClick() {
         if (Input.GetButtonDown("Fire1")) {
@@ -173,7 +202,7 @@ public class UIController : MonoBehaviour
                 textObj.GetComponent<Text>().font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
             }
             if (info["Name"] == "Factory") {
-                Button button = (Button)Instantiate(addWorkerButton); // , new Vector3(50, 50, 0), Quaternion.identity);
+                Button button = (Button)Instantiate(addWorkerButton);
                 HorizontalLayoutGroup hg = button.gameObject.AddComponent<HorizontalLayoutGroup>();
                 hg.SetLayoutHorizontal();
                 button.transform.SetParent(popUpPanel.transform);
@@ -191,7 +220,10 @@ public class UIController : MonoBehaviour
     }
 
     void addWorkerClick(GameObject building) {
-        building.GetComponent<Building>().addWorkers();
+        if (!rc.addWorker(building)) {
+            warningPopUp("No workers available");
+        }
+        updateWorkerText();
         // Refresh (easier way?)
         closeContentsMenu();
         openContentsMenu(building);
