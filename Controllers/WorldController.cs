@@ -133,13 +133,8 @@ public class WorldController : MonoBehaviour
             rc.AddResourceBuilding(b);
             BuildingToTiles(b, worldPosition);
             builtBuildings.Add(b);
-            Debug.Log(bm.Name);
-            Debug.Log(building.MaxWorkers);
             if (bm.Name == "Center") {
-                Debug.Log(b);
-                for (int i = 0; i < building.MaxWorkers; i++) {
-                    rc.addWorker(b, true);
-                }
+                rc.addCenter(b);
                 buildings = buildings.Where(bl => bl.Name != bm.Name).ToArray();
             }
             return true;
@@ -254,6 +249,7 @@ public class WorldController : MonoBehaviour
     }
 
     public BuildingModel GetBuildingByName(string buildingName) {
+        Debug.Log(buildingName);
         BuildingModel bm = buildings.SingleOrDefault(item => item.Name == buildingName);
         return bm;
     }
@@ -263,6 +259,7 @@ public class WorldController : MonoBehaviour
             return buildings;
         }
         BuildingModel[] unlocked_b = buildings.Where(x => buildingUnlocked(x.Name)).ToArray();
+        Debug.Log(unlocked_b);
         return unlocked_b;
     }
 

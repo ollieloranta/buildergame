@@ -112,6 +112,26 @@ public class Building : WorldObject
         }
         return true;
     }
+    public int SizeX {
+        get {
+            return m_sizeX;
+        }
+    }
+    public int SizeY {
+        get {
+            return m_sizeY;
+        }
+    }
+
+    public GameObject removeWorker() {
+        if (NumWorkers <= 0) {
+            return null;
+        }
+        GameObject removed_worker = m_workers[m_workers.Count - 1];
+        m_workers.RemoveAt(m_workers.Count - 1);
+        return removed_worker;
+    }
+
     void findResource() {
         Debug.Log("Find resource");
         if (!isGatherer)

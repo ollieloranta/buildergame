@@ -56,6 +56,7 @@ public class UIController : MonoBehaviour
                 Text buttonText = child.GetChild(0).GetComponent<Text>();
                 Color textColor = buttonText.color;
                 string b = buttonText.text;
+                Debug.Log(wc);
                 if (resources < wc.GetBuildingByName(b).Cost || !wc.buildingUnlocked(b)) {
                     textColor.a = 0.5f;
                     buttonText.color = textColor;
@@ -222,8 +223,8 @@ public class UIController : MonoBehaviour
     }
 
     void addWorkerClick(GameObject building) {
-        if (!rc.GetComponent<Building>().addWorker(building)) {
-            warningPopUp("No workers available");
+        if (!rc.moveWorker(building)) {
+            warningPopUp("No workers available");  // TODO: Add warning that building is full
         }
         updateWorkerText();
         // Refresh (easier way?)

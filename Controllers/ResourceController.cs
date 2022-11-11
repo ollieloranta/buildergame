@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class ResourceController : MonoBehaviour
 {
-    uint m_maxWorkers = 5;
+    uint m_maxWorkers = 10;
     uint m_currentWorkers = 0;
     float m_totalResource = 1000f;
+    GameObject m_center;
     List<GameObject> resourceBuildings;
 
     public GameObject workerPrefab;
@@ -30,27 +31,80 @@ public class ResourceController : MonoBehaviour
         Debug.Log("Added new building (" + bs.Name + "). New production: " + bs.Resources);
     }
 
-    public bool addWorker(GameObject building, bool idle=false) {
-        if (!idle) {
-            if (m_currentWorkers >= m_maxWorkers) {
-                Debug.Log("No more available workers.");
-                return false;
-            }
-            m_currentWorkers += 1;
+    public Vector3 workerPosition(Building b) {
+        float theta = b.NumWorkers * 2 * Mathf.PI / b.MaxWorkers;
+        float x = Mathf.Sin(theta) * 1;
+        float y = Mathf.Cos(theta) * 1;
+        Vector3 pos = new Vector3(x + b.X, y + b.Y, 0);
+        return pos;
+    }
+
+
+    public bool moveWorker(GameObject building) {
+        if (m_currentWorkers >= m_maxWorkers) {
+            Debug.Log("No workers available.");
+            return false;
         }
-        Debug.Log("Adding worker.");
+        Building b = building.GetComponent<Building>();
+        if (b.NumWorkers >= b.MaxWorkers) {
+            Debug.Log("No space for new workers.");
+            return false;
+        }
+        Building cb = m_center.GetComponent<Building>();
+        GameObject worker = cb.removeWorker();
+        b.addWorker(worker);
+        Vector3 newPos = workerPosition(b);
+        worker.transform.position = newPos;
+        m_currentWorkers += 1;
+        Debug.Log("Worker added to " + b.Name);
+        return true;
+    }
+
+    public bool removeWorker(GameObject building) {
+        Building b = building.GetComponent<Building>();
+        Building cb = m_center.GetComponent<Building>();
+        if (b.NumWorkers > 0) {
+            GameObject worker = b.removeWorker();
+            cb.addWorker(worker);
+            m_currentWorkers -= 1;
+            return true;
+        } else {
+            Debug.Log("No more workers to remove.");
+            return false;
+        }
+    }
+
+    public bool killWorker(GameObject worker) {
+        return false;
+    }
+
+    public bool addNewWorker(GameObject building) {
+        if (m_currentWorkers >= m_maxWorkers) {
+            Debug.Log("No more space for new workers.");
+            return false;
+        }
+        Debug.Log("Adding new worker.");
         Building b = building.GetComponent<Building>();
         if (b.NumWorkers < b.MaxWorkers) {
             // Spawn workers in circle outside building
             float theta = b.NumWorkers * 2 * Mathf.PI / b.MaxWorkers;
-            float x = Mathf.Sin(theta) * 1;
-            float y = Mathf.Cos(theta) * 1;
+            float x = Mathf.Sin(theta) * b.SizeX + 0.25f * b.SizeX;
+            float y = Mathf.Cos(theta) * b.SizeY + 0.25f * b.SizeY;
             Vector3 pos = new Vector3(x + b.X, y + b.Y, 0);
-            // Vector3 pos = new Vector3(x * sx + x + 0.5f * sy, y * sy + y + 0.5f * sx, 0);
             GameObject worker = ((GameObject) Instantiate(workerPrefab, pos, workerPrefab.transform.rotation));
+            Worker w = worker.AddComponent<Worker>();
             b.addWorker(worker);
         }
         Debug.Log("Worker added");
+        return true;
+    }
+
+    public bool addCenter(GameObject building) {
+        m_center = building;
+        Building cb = building.GetComponent<Building>();
+        for (int i = 0; i < cb.MaxWorkers; i++) {
+            addNewWorker(building);
+        }
         return true;
     }
 
