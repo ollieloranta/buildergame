@@ -53,3 +53,12 @@ public class ResourceTree : Resource
     }
 
 }
+
+public class ResourceResearch : Resource
+{
+    public ResourceResearch()
+    {
+        this.m_resources = 100f;
+        this.m_resourceName = "Research";
+    }
+}

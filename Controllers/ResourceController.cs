@@ -7,13 +7,16 @@ public class ResourceController : MonoBehaviour
     uint m_maxWorkers = 10;
     uint m_currentWorkers = 0;
     float m_totalResource = 1000f;
+    float m_totalResearch = 100f;
     GameObject m_center;
+    List<GameObject> m_workers;
     List<GameObject> resourceBuildings;
 
     public GameObject workerPrefab;
 
     void Start() {
         resourceBuildings = new List<GameObject>();
+        m_workers = new List<GameObject>();
         Debug.Log("Created ResourceController");
     }
     
@@ -21,6 +24,7 @@ public class ResourceController : MonoBehaviour
         foreach (var b in resourceBuildings) {
             Building bScript = b.GetComponent<Building>();
             m_totalResource += bScript.consumeResource();
+            m_totalResearch += bScript.generateResearch();
         }
     }
 
@@ -38,7 +42,6 @@ public class ResourceController : MonoBehaviour
         Vector3 pos = new Vector3(x + b.X, y + b.Y, 0);
         return pos;
     }
-
 
     public bool moveWorker(GameObject building) {
         if (m_currentWorkers >= m_maxWorkers) {
@@ -93,6 +96,7 @@ public class ResourceController : MonoBehaviour
             Vector3 pos = new Vector3(x + b.X, y + b.Y, 0);
             GameObject worker = ((GameObject) Instantiate(workerPrefab, pos, workerPrefab.transform.rotation));
             Worker w = worker.AddComponent<Worker>();
+            m_workers.Add(worker);
             b.addWorker(worker);
         }
         Debug.Log("Worker added");
@@ -106,6 +110,21 @@ public class ResourceController : MonoBehaviour
             addNewWorker(building);
         }
         return true;
+    }
+
+    public bool consumeResearch(float amount) {
+        if (m_totalResearch >= amount) {
+            m_totalResearch -= amount;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public List<GameObject> WorkerList {
+        get {
+            return m_workers;
+        }
     }
 
     public float Workers {
@@ -123,6 +142,12 @@ public class ResourceController : MonoBehaviour
     public float Resources {
         get {
             return m_totalResource;
+        }
+    }
+
+    public float Research {
+        get {
+            return m_totalResearch;
         }
     }
 }

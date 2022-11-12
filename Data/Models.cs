@@ -9,7 +9,9 @@ public class BuildingModel
     public int Size_x;
     public int Size_y;
     public string[] Requires;
+    public string[] RequiresResearch;
     public bool IsGatherer;
+    public bool IsGenerator;
     public float GatherRate;
     public string ResourceType;
     public int ResourceRange;

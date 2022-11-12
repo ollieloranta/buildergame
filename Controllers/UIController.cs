@@ -15,16 +15,23 @@ public class UIController : MonoBehaviour
 
     StateController ac;
     public Text resourceText;
+    public Text researchText;
     public Text workerText;
     public Canvas UICanvas;
     public GameObject buttonPanel;
     public GameObject popUpPanel;
     public GameObject warningPanel;
+    public GameObject menuContentsPanel;
     public Button buildBuildingButton;
     public Button addWorkerButton;
     public Button buildMenuButton;
+    public Button ResearchMenuButton;
+    public Button WorkerMenuButton;
+    public Button MenuButton;
 
     bool buildMenuOpen;
+    bool buildMenuOpened;
+    bool menuContentsOpen;
 
     GameObject currentBuilding;
     bool buildingPlaced;
@@ -32,6 +39,7 @@ public class UIController : MonoBehaviour
     void Start()
     {
         buildingPlaced = false;
+        buildMenuOpened = false;
         wc = worldController.GetComponent<WorldController>();
         rc = resourceController.GetComponent<ResourceController>();
         ac = stateController.GetComponent<StateController>();
@@ -49,14 +57,15 @@ public class UIController : MonoBehaviour
 
     void UpdateUI() {
         float resources = rc.Resources;
+        float research = rc.Research;
         resourceText.text = System.String.Format("Resources: {0:0}", resources);
-        // Gray out build menu items that are not affordable
-        if (buildMenuOpen) {
+        researchText.text = System.String.Format("Research: {0:0}", research);
+        // Disable build menu items that are not affordable
+        if (buildMenuOpen && !buildMenuOpened) {
             foreach (Transform child in buttonPanel.transform) {
                 Text buttonText = child.GetChild(0).GetComponent<Text>();
                 Color textColor = buttonText.color;
                 string b = buttonText.text;
-                Debug.Log(wc);
                 if (resources < wc.GetBuildingByName(b).Cost || !wc.buildingUnlocked(b)) {
                     textColor.a = 0.5f;
                     buttonText.color = textColor;
@@ -66,6 +75,7 @@ public class UIController : MonoBehaviour
                     buttonText.color = textColor;
                 }
             }
+            buildMenuOpened = true;
         }
     }
 
@@ -163,6 +173,12 @@ public class UIController : MonoBehaviour
 
     void CreateButtonClicks() {
         buildMenuButton.onClick.AddListener(buildMenuClick);
+        WorkerMenuButton.onClick.AddListener(workerMenuClick);
+        ResearchMenuButton.onClick.AddListener(researchMenuClick);
+        MenuButton.onClick.AddListener(menuClick);
+    }
+
+    void closeAllMenus() {
     }
 
     void buildMenuClick() {
@@ -196,13 +212,12 @@ public class UIController : MonoBehaviour
             Dictionary<string, string> info = contents.GetComponent<WorldObject>().getInformation();
             foreach(KeyValuePair<string, string> kv in info)
             {
-                Debug.Log(kv.Key);
-                Debug.Log(kv.Value);
                 GameObject textObj = new GameObject("popUpText"+kv.Key);
                 textObj.transform.SetParent(popUpPanel.transform);
                 Text infoText = textObj.AddComponent<Text>();
                 infoText.text = kv.Key + ": " + kv.Value;
-                textObj.GetComponent<Text>().font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                infoText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+                infoText.color = Color.black;
             }
             if (info["Name"] == "Factory") {
                 Button button = (Button)Instantiate(addWorkerButton);
@@ -220,6 +235,88 @@ public class UIController : MonoBehaviour
             GameObject.Destroy(child.gameObject);
         }
         popUpPanel.GetComponent<Image>().enabled = false;
+    }
+
+    bool openCloseMenu() {
+        if (menuContentsPanel.activeSelf) {
+            foreach (Transform child in menuContentsPanel.transform) {
+                GameObject.Destroy(child.gameObject);
+            }
+            menuContentsPanel.SetActive(false);
+            return false;
+        } else {
+            menuContentsPanel.SetActive(true);
+            return true;
+        }
+    }
+
+    void workerMenuClick() {
+        if (openCloseMenu()) showWorkerStats();
+    }
+
+    void researchMenuClick() {
+        if (openCloseMenu()) showResearchMenu();
+    }
+
+    void menuClick() {
+        if (openCloseMenu()) showMainMenu();
+    }
+
+    void showWorkerStats() {
+        List<GameObject> workers = rc.WorkerList;
+        for (int i = 0; i < workers.Count; i++) {
+            Worker w = workers[i].GetComponent<Worker>();
+            GameObject infoObj = new GameObject("WorkerStat" + i.ToString());
+            infoObj.transform.SetParent(menuContentsPanel.transform);
+            Text infoText = infoObj.AddComponent<Text>();
+            Dictionary<string, string> workerStat = w.getObjectContents();
+            string textContents = "";
+            foreach(KeyValuePair<string, string> stat in workerStat)
+            {
+                textContents += stat.Key + ": " + stat.Value + ", ";
+            }
+            infoText.text = textContents;
+            infoText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+            infoText.color = Color.black;
+        }
+    }
+
+    void showResearchMenu() {
+        GameObject researchTitle = new GameObject("ResearchMenuTitle");
+        researchTitle.transform.SetParent(menuContentsPanel.transform);
+        Text titleText = researchTitle.AddComponent<Text>();
+        titleText.text = "Available research";
+        titleText.fontSize = 20;
+        titleText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+        titleText.color = Color.black;
+        titleText.alignment = TextAnchor.MiddleCenter;
+        // Dummy implementation
+        Button button = (Button)Instantiate(addWorkerButton);
+        HorizontalLayoutGroup hg = button.gameObject.AddComponent<HorizontalLayoutGroup>();
+        button.transform.SetParent(menuContentsPanel.transform);
+        button.GetComponent<Button>().onClick.AddListener(() => {unlockResearch();});
+        button.transform.GetChild(0).GetComponent<Text>().text = "The Temple";
+    }
+
+    void unlockResearch() {
+        if (wc.getResearch("Temple")) {
+            warningPopUp("Temple researched!");
+        } else {
+            warningPopUp("Not enough research for Temple");
+        }
+    }
+
+    void showMainMenu() {
+        Button button = (Button)Instantiate(addWorkerButton);
+        HorizontalLayoutGroup hg = button.gameObject.AddComponent<HorizontalLayoutGroup>();
+        button.transform.SetParent(menuContentsPanel.transform);
+        button.transform.GetChild(0).GetComponent<Text>().text = "Exit Game";
+        button.GetComponent<Button>().onClick.AddListener(() => {exitGame();});
+    }
+
+    void exitGame() {
+        Application.Quit();
+        UnityEditor.EditorApplication.isPlaying = false;
     }
 
     void addWorkerClick(GameObject building) {
@@ -246,6 +343,5 @@ public class UIController : MonoBehaviour
         else {
             Debug.Log("Building not unlocked");
         }
-        
     }
 }

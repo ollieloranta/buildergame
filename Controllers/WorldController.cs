@@ -27,6 +27,8 @@ public class WorldController : MonoBehaviour
     
     BuildingModel[] buildings;
     List<GameObject> builtBuildings;
+    List<string> m_researches;
+    List<string> m_doneResearches;
     DataConfig dataConfig;
 
     Vector3 mousePos;
@@ -41,6 +43,9 @@ public class WorldController : MonoBehaviour
         rc = resourceController.GetComponent<ResourceController>();
         sc = stateController.GetComponent<StateController>();
         builtBuildings = new List<GameObject>();
+        m_researches = new List<string>();
+        m_doneResearches = new List<string>();
+        m_researches.Add("Temple");
         LoadBuildingJson();
         LoadDataConfigJson();
 
@@ -205,12 +210,18 @@ public class WorldController : MonoBehaviour
         BuildingModel requiredBuilding = buildings.SingleOrDefault(item => item.Name == b);
         foreach (string req in requiredBuilding.Requires) {
             if (!builtBuildings.Find(i => i.GetComponent<Building>().Name == req)) {
-                Debug.Log("Requirement not found");
-                Debug.Log(builtBuildings);
-                Debug.Log(req);
+                Debug.Log("Building requirement not found: " + req);
                 return false;
             }
         }
+        string[] researchReq = requiredBuilding.RequiresResearch;
+        foreach (string reqr in researchReq) {
+            if (!m_doneResearches.Contains(reqr)) {
+                Debug.Log("Research equirement not found: " + reqr);
+                return false;
+            }
+        }
+        Debug.Log("WC: Building " + b + " is unlocked.");
         return true;
     }
 
@@ -249,7 +260,6 @@ public class WorldController : MonoBehaviour
     }
 
     public BuildingModel GetBuildingByName(string buildingName) {
-        Debug.Log(buildingName);
         BuildingModel bm = buildings.SingleOrDefault(item => item.Name == buildingName);
         return bm;
     }
@@ -259,7 +269,6 @@ public class WorldController : MonoBehaviour
             return buildings;
         }
         BuildingModel[] unlocked_b = buildings.Where(x => buildingUnlocked(x.Name)).ToArray();
-        Debug.Log(unlocked_b);
         return unlocked_b;
     }
 
@@ -273,7 +282,28 @@ public class WorldController : MonoBehaviour
         Debug.Log(dataConfig);
         Debug.Log(dataConfig.buildingPrefabPath);
     }
-    
+
+    public bool getResearch(string research) {
+        if (rc.consumeResearch(100f)) {  // TODO: research names / Prices
+            m_researches.Remove(research);
+            m_doneResearches.Add(research);
+            return true;
+        }
+        return false;
+    }
+
+    public List<string> DoneResearches {
+        get {
+            return m_doneResearches;
+        }
+    }
+
+    public List<string> AvailableResearches {
+        get {
+            return m_researches;
+        }
+    }
+
     public GameObject TileContents(int x, int y) {
         return world.GetTile(x, y).Contents;
     }

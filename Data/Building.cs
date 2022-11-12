@@ -15,12 +15,13 @@ public class Building : WorldObject
     List<GameObject> m_workers;
     int m_maxWorkers;
     bool isGatherer;
+    bool isGenerator;
     bool m_isActive;
-    
     int m_range;
     string m_resourceType;
     float m_gatherSpeed;
     GameObject m_currentResource;
+    string[] m_requiresResearch;
 
     public override Dictionary<string, string> getObjectContents() {
         var contents = new Dictionary<string, string>();
@@ -29,6 +30,10 @@ public class Building : WorldObject
             contents["Gathering"] = m_resourceType.ToString();
             contents["Gather rate"] = m_gatherSpeed.ToString();
             contents["Gather range"] = m_range.ToString();
+        }
+        if (isGenerator) {
+            contents["Gathering"] = m_resourceType.ToString();
+            contents["Gather rate"] = m_gatherSpeed.ToString();
         }
         return contents;
     }
@@ -43,14 +48,16 @@ public class Building : WorldObject
         m_sizeX = bm.Size_x;
         m_sizeY = bm.Size_y;
         m_requirements = bm.Requires;
+        m_requiresResearch = bm.RequiresResearch;
         m_isActive = false;
         isGatherer = bm.IsGatherer;
+        isGenerator = bm.IsGenerator;
         m_maxWorkers = bm.MaxWorkers;
-        m_workers = new List<GameObject>();;
+        m_workers = new List<GameObject>();
+        m_range = bm.ResourceRange;
+        m_gatherSpeed = bm.ResourceSpeed;
+        m_resourceType = bm.ResourceType;
         if (isGatherer) {
-            m_range = bm.ResourceRange;
-            m_gatherSpeed = bm.ResourceSpeed;
-            m_resourceType = bm.ResourceType;
             findResource();
         }
     }
@@ -88,6 +95,11 @@ public class Building : WorldObject
     public string[] Requirements {
         get {
             return m_requirements;
+        }
+    }
+    public string[] Research {
+        get {
+            return m_requiresResearch;
         }
     }
     public List<GameObject> Workers {
@@ -169,8 +181,14 @@ public class Building : WorldObject
         {
             findResource();
         }
-        
-        // Debug.Log("Generated " + consumed + " resources.");
         return consumed;
+    }
+
+    public float generateResearch() {
+        if (isGenerator) {
+            float gatherAmount = m_gatherSpeed * Time.deltaTime;
+            return gatherAmount;
+        }
+        return 0f;
     }
 }

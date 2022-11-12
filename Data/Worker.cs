@@ -10,7 +10,7 @@ public class Worker : WorldObject
 
     public override Dictionary<string, string> getObjectContents() {
         var contents = new Dictionary<string, string>();
-        contents["Name"] = "Worker";
+        contents["Name"] = "John";
         contents["Age"] = m_age.ToString();
         contents["Health"] = m_health.ToString();
         return contents;
