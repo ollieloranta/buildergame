@@ -24,3 +24,13 @@ public class DataConfig
 {
     public string buildingPrefabPath;
 }
+
+[Serializable]
+public class Research
+{
+    public string Name;
+    public string Description;
+    public int Cost;
+    public string[] RequiresResearch;
+    public string[] RequiresBuilding;
+}

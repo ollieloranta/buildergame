@@ -1,0 +1,7 @@
+{
+    "Items": [
+        {"Name": "Temple", "Description": "A temple used to meditate and relax.", "Cost": 100, "RequiresBuilding": ["House"], "RequiresResearch": []},
+        {"Name": "Improved Factory", "Description": "20% Increase to factory work rate.", "Cost": 50, "RequiresBuilding": ["Factory"], "RequiresResearch": []},
+        {"Name": "Improved Temple", "Description": "25% Increase to Temple research gather rate.", "Cost": 150, "RequiresBuilding": ["Temple"], "RequiresResearch": []}
+    ]
+}

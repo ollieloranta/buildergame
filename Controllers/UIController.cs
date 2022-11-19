@@ -290,20 +290,24 @@ public class UIController : MonoBehaviour
         titleText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
         titleText.color = Color.black;
         titleText.alignment = TextAnchor.MiddleCenter;
-        // Dummy implementation
-        Button button = (Button)Instantiate(addWorkerButton);
-        HorizontalLayoutGroup hg = button.gameObject.AddComponent<HorizontalLayoutGroup>();
-        button.transform.SetParent(menuContentsPanel.transform);
-        button.GetComponent<Button>().onClick.AddListener(() => {unlockResearch();});
-        button.transform.GetChild(0).GetComponent<Text>().text = "The Temple";
+        foreach(Research research in wc.AvailableResearches) {
+            Button button = (Button)Instantiate(addWorkerButton);
+            HorizontalLayoutGroup hg = button.gameObject.AddComponent<HorizontalLayoutGroup>();
+            button.transform.SetParent(menuContentsPanel.transform);
+            button.GetComponent<Button>().onClick.AddListener(() => {unlockResearch(research.Name);});
+            button.transform.GetChild(0).GetComponent<Text>().text = research.Name + " (Cost: " + research.Cost.ToString() + ")";
+        }
     }
 
-    void unlockResearch() {
-        if (wc.getResearch("Temple")) {
-            warningPopUp("Temple researched!");
+    void unlockResearch(string research) {
+        if (wc.getResearch(research)) {
+            warningPopUp(research + " researched!");
         } else {
-            warningPopUp("Not enough research for Temple");
+            warningPopUp("Not enough research for " + research);
         }
+        openCloseMenu();
+        openCloseMenu();
+        showResearchMenu();
     }
 
     void showMainMenu() {

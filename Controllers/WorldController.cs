@@ -27,7 +27,7 @@ public class WorldController : MonoBehaviour
     
     BuildingModel[] buildings;
     List<GameObject> builtBuildings;
-    List<string> m_researches;
+    Dictionary<string, Research> m_researches;
     List<string> m_doneResearches;
     DataConfig dataConfig;
 
@@ -43,11 +43,11 @@ public class WorldController : MonoBehaviour
         rc = resourceController.GetComponent<ResourceController>();
         sc = stateController.GetComponent<StateController>();
         builtBuildings = new List<GameObject>();
-        m_researches = new List<string>();
         m_doneResearches = new List<string>();
-        m_researches.Add("Temple");
+        m_researches = new Dictionary<string, Research>();
         LoadBuildingJson();
         LoadDataConfigJson();
+        LoadResearchJson();
 
         GenerateWorld();
     }
@@ -251,7 +251,22 @@ public class WorldController : MonoBehaviour
             buildings = JsonHelper.FromJson<BuildingModel>(json);
             Debug.Log(buildings);
         }
-        Debug.Log(buildings[0].Cost);
+        Debug.Log("Building JSON loaded.");
+    }
+
+    void LoadResearchJson() {
+        string fileName = Path.Combine(Application.dataPath, "Data/Research.json");
+        Debug.Log(fileName);
+        using (StreamReader r = new StreamReader(fileName))
+        {
+            string json = r.ReadToEnd();
+            Research[] researches = JsonHelper.FromJson<Research>(json);
+            foreach (Research research in researches) {
+                m_researches[research.Name] = research;
+            }
+            Debug.Log(m_researches);
+        }
+        Debug.Log("Research JSON loaded.");
     }
 
     public string[] getAllBuildingNames() {
@@ -284,8 +299,8 @@ public class WorldController : MonoBehaviour
     }
 
     public bool getResearch(string research) {
-        if (rc.consumeResearch(100f)) {  // TODO: research names / Prices
-            m_researches.Remove(research);
+        Research rs = m_researches[research];
+        if (rc.consumeResearch(rs.Cost)) {
             m_doneResearches.Add(research);
             return true;
         }
@@ -298,10 +313,30 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    public List<string> AvailableResearches {
+    public List<Research> AvailableResearches {
         get {
-            return m_researches;
+            var available = new List<Research>();
+            foreach(var rs_name in m_researches.Keys) {
+                if (researchAvailable(rs_name)) {
+                    available.Add(m_researches[rs_name]);
+                }
+            }
+            return available;
         }
+    }
+
+    public bool researchAvailable(string rs_name) {
+        if (m_doneResearches.Contains(rs_name)) return false;
+        Research rs = m_researches[rs_name];
+        foreach (string req in rs.RequiresResearch) {
+            if (!m_doneResearches.Contains(req)) return false;
+        }
+        foreach (string req in rs.RequiresBuilding) {
+            if (!builtBuildings.Find(i => i.GetComponent<Building>().Name == req)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public GameObject TileContents(int x, int y) {
