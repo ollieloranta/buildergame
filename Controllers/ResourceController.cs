@@ -8,6 +8,8 @@ public class ResourceController : MonoBehaviour
     uint m_currentWorkers = 0;
     float m_totalResource = 1000f;
     float m_totalResearch = 100f;
+    bool m_factoriesImproved = false;
+    bool m_templesImproved = false;
     GameObject m_center;
     List<GameObject> m_workers;
     List<GameObject> resourceBuildings;
@@ -31,6 +33,12 @@ public class ResourceController : MonoBehaviour
     public void AddResourceBuilding(GameObject b) {
         Building bs = b.GetComponent<Building>();
         m_totalResource -= bs.Cost;
+        if (bs.Name == "Factory" && m_factoriesImproved) {
+            bs.addResourceSpeed(0.2f);
+        }
+        if (bs.Name == "Temple" && m_templesImproved) {
+            bs.addResearchSpeed(0.25f);
+        }
         resourceBuildings.Add(b);
         Debug.Log("Added new building (" + bs.Name + "). New production: " + bs.Resources);
     }
@@ -118,6 +126,26 @@ public class ResourceController : MonoBehaviour
             return true;
         } else {
             return false;
+        }
+    }
+    
+    public void improveFactoriesResearch() {
+        m_factoriesImproved = true;
+        foreach(var building in resourceBuildings) {
+            Building b = building.GetComponent<Building>();
+            if (b.Name == "Factory") {
+                b.addResourceSpeed(0.2f);
+            }
+        }
+    }
+    
+    public void improveTemplesResearch() {
+        m_templesImproved = true;
+        foreach(var building in resourceBuildings) {
+            Building b = building.GetComponent<Building>();
+            if (b.Name == "Temple") {
+                b.addResearchSpeed(0.25f);
+            }
         }
     }
 

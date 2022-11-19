@@ -302,6 +302,13 @@ public class WorldController : MonoBehaviour
         Research rs = m_researches[research];
         if (rc.consumeResearch(rs.Cost)) {
             m_doneResearches.Add(research);
+            // TODO: This handling somewhere else
+            if (research == "Improved Factory") {
+                rc.improveFactoriesResearch();
+            }
+            else if (research == "Improved Temple") {
+                rc.improveTemplesResearch();
+            }
             return true;
         }
         return false;

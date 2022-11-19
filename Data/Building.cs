@@ -20,6 +20,8 @@ public class Building : WorldObject
     int m_range;
     string m_resourceType;
     float m_gatherSpeed;
+    float m_resourceSpeedModifier = 1f;
+    float m_researchSpeedModifier = 1f;
     GameObject m_currentResource;
     string[] m_requiresResearch;
 
@@ -175,7 +177,7 @@ public class Building : WorldObject
         if (!isGatherer || !m_isActive) {
             return 0f;
         }
-        float gatherAmount = m_gatherSpeed * Time.deltaTime * NumWorkers;
+        float gatherAmount = m_gatherSpeed * Time.deltaTime * m_resourceSpeedModifier * NumWorkers;
         float consumed = m_currentResource.GetComponent<Resource>().consumeResource(gatherAmount);
         if (consumed < gatherAmount)
         {
@@ -183,12 +185,17 @@ public class Building : WorldObject
         }
         return consumed;
     }
-
     public float generateResearch() {
         if (isGenerator) {
-            float gatherAmount = m_gatherSpeed * Time.deltaTime;
+            float gatherAmount = m_gatherSpeed * m_researchSpeedModifier * Time.deltaTime;
             return gatherAmount;
         }
         return 0f;
+    }
+    public void addResearchSpeed(float change) {
+        m_researchSpeedModifier += change;
+    }
+    public void addResourceSpeed(float change) {
+        m_resourceSpeedModifier += change;
     }
 }
