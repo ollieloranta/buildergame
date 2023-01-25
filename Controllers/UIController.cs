@@ -104,31 +104,41 @@ public class UIController : MonoBehaviour
     }
 
 
-
     void ListenMapClick() {
         if (Input.GetButtonDown("Fire1")) {
             if (EventSystem.current.IsPointerOverGameObject())
             {
                 return;
             }
-            Vector3 worldPosition;
-            Plane plane = new Plane(Vector3.back, 0);
-            float distance;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (plane.Raycast(ray, out distance))
-            {
-                worldPosition = ray.GetPoint(distance);
-                worldPosition[0] = Mathf.Round(worldPosition[0]);
-                worldPosition[1] = Mathf.Round(worldPosition[1]);
-                if (wc.TileClicked(worldPosition))
+            if (currentBuilding != null && !buildingPlaced) {
+                Vector3 worldPosition;
+                Plane plane = new Plane(Vector3.back, 0);
+                float distance;
+                if (plane.Raycast(ray, out distance))
                 {
-                    closeContentsMenu();
-                    buildingPlaced = true;
-                    if (currentBuilding) {
+                    worldPosition = ray.GetPoint(distance);
+                    worldPosition[0] = Mathf.Round(worldPosition[0]);
+                    worldPosition[1] = Mathf.Round(worldPosition[1]);
+                    if (wc.TileClicked(worldPosition))
+                    {
+                        closeContentsMenu();
+                        buildingPlaced = true;
                         Destroy(currentBuilding);
                     }
-                    else {
-                        openContentsMenu(wc.TileContents((int)worldPosition[0], (int)worldPosition[1]));
+                }
+            }
+            else {
+                if (menuContentsOpen) {
+                    closeContentsMenu();
+                }
+                RaycastHit raycastHit;
+                if (Physics.Raycast(ray, out raycastHit, 100f))
+                {
+                    if (raycastHit.transform != null)
+                    {
+                        GameObject hitObject = raycastHit.transform.gameObject;
+                        openContentsMenu(hitObject);
                     }
                 }
             }
@@ -208,6 +218,9 @@ public class UIController : MonoBehaviour
 
     void openContentsMenu(GameObject contents) {
         if (contents) {
+            if(contents.GetComponent<WorldObject>() == null) {
+                return;
+            }
             popUpPanel.GetComponent<Image>().enabled = true;
             Dictionary<string, string> info = contents.GetComponent<WorldObject>().getInformation();
             foreach(KeyValuePair<string, string> kv in info)
@@ -227,10 +240,12 @@ public class UIController : MonoBehaviour
                 button.GetComponent<Button>().onClick.AddListener(() => {addWorkerClick(contents);});
                 button.transform.GetChild(0).GetComponent<Text>().text = "Add worker";
             }
+            menuContentsOpen = true;
         }
     }
     
     void closeContentsMenu() {
+        menuContentsOpen = false;
         foreach (Transform child in popUpPanel.transform) {
             GameObject.Destroy(child.gameObject);
         }
