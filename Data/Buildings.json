@@ -9,9 +9,11 @@
                 "Building": [],
                 "Research": []
             },
-            "MGenerator": {
+            "MGatherer": {
                 "ResourceType": "Research",
-                "GatherRate": 2
+                "GatherRate": 2,
+                "RequireWorkers": false,
+                "IsGenerator": true
             },
             "MWorkplace": {
                 "MaxWorkers": 10
@@ -44,7 +46,8 @@
                 "ResourceType": "Tree",
                 "ResourceRange": 5,
                 "GatherRate": 10, 
-                "RequireWorkers": true
+                "RequireWorkers": true,
+                "SpeedPerWorker": 7
             },
             "MWorkplace": {
                 "MaxWorkers": 3
@@ -59,8 +62,7 @@
                 "Building": ["Factory"],
                 "Research": ["Temple"]
             }
-        }    
-            
+        }
     ]
     
 }

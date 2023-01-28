@@ -16,7 +16,6 @@ public class BuildingModel
     public Requirements MRequirements;
     public HousingModel MHousing;
     public GatherModel MGatherer;
-    public GeneratorModel MGenerator;
     public WorkplaceModel MWorkplace;
 }
 
@@ -40,15 +39,9 @@ public class GatherModel
     public string ResourceType;
     public float GatherRate;
     public int ResourceRange;
+    public bool IsGenerator;
     public bool RequireWorkers;
-}
-
-[Serializable]
-public class GeneratorModel
-{
-    public string ResourceType;
-    public float GatherRate;
-    public bool RequireWorkers;
+    public float IncreasePerWorker;
 }
 
 [Serializable]

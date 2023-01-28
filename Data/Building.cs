@@ -39,12 +39,9 @@ public class Building : WorldObject
         if (bm.MGatherer.GatherRate > 0) {
             GatherModel gm = bm.MGatherer;
             ResourceGatherer rg = this.gameObject.AddComponent<ResourceGatherer>();
-            rg.setProperties(gm.ResourceType, gm.GatherRate, gm.RequireWorkers, gm.ResourceRange);
-        }
-        if (bm.MGenerator.GatherRate > 0) {
-            GeneratorModel gm = bm.MGenerator;
-            ResourceGenerator rg = this.gameObject.AddComponent<ResourceGenerator>();
-            rg.setProperties(gm.ResourceType, gm.GatherRate, gm.RequireWorkers);
+            rg.setProperties(
+                gm.ResourceType, gm.GatherRate, gm.IsGenerator, gm.RequireWorkers, gm.IncreasePerWorker, gm.ResourceRange
+            );
         }
     }
 

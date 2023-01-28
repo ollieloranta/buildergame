@@ -26,11 +26,14 @@ public class ResourceController : MonoBehaviour
         foreach (var b in resourceBuildings) {
             ResourceGatherer rg = b.GetComponent<ResourceGatherer>();
             if (rg != null) {
-                m_totalResource += rg.consumeResource();
-            }
-            ResourceGenerator rge = b.GetComponent<ResourceGenerator>();
-            if (rge != null) {
-                m_totalResearch += rge.generateResource();
+                string type = rg.ResourceType;
+                float gathered = rg.gatherResource();
+                if (type == "Research") {
+                    m_totalResearch += gathered;
+                }
+                else {
+                    m_totalResource += gathered;
+                }
             }
         }
     }
@@ -38,14 +41,20 @@ public class ResourceController : MonoBehaviour
     public void AddResourceBuilding(GameObject b) {
         Building bs = b.GetComponent<Building>();
         m_totalResource -= bs.Cost;
-        if (bs.Name == "Factory" && m_factoriesImproved) {
-            bs.GetComponent<ResourceGatherer>().addSpeed(0.2f);
+        ResourceGatherer rg = b.GetComponent<ResourceGatherer>();
+        if (rg == null) {
+            Debug.Log("Added new building (" + bs.Name + ")");
         }
-        if (bs.Name == "Temple" && m_templesImproved) {
-            bs.GetComponent<ResourceGenerator>().addSpeed(0.25f);
+        else {
+            if (bs.Name == "Factory" && m_factoriesImproved) {
+                bs.GetComponent<ResourceGatherer>().addSpeed(0.2f);
+            }
+            if (bs.Name == "Temple" && m_templesImproved) {
+                bs.GetComponent<ResourceGatherer>().addSpeed(0.25f);
+            }
+            resourceBuildings.Add(b);
+            Debug.Log("Added new gatherer building (" + bs.Name + ")");
         }
-        resourceBuildings.Add(b);
-        Debug.Log("Added new building (" + bs.Name + ")");
     }
 
     public Vector3 workerPosition(Vector3 position, int numWorkers, int maxWorkers) {

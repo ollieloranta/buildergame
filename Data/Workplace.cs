@@ -13,12 +13,16 @@ public class Workplace : MonoBehaviour
     }
 
     public bool addWorker(GameObject worker) {
-        Debug.Log("Adding worker");
+        Debug.Log("Workplace: Adding worker");
         if (NumWorkers + 1 > m_maxWorkers) {
             return false;
         }
         else {
             m_workers.Add(worker);
+            ResourceGatherer rc = gameObject.GetComponent<ResourceGatherer>();
+            if (rc != null) {
+                rc.addWorker();
+            }
             return true;
         }
     }
@@ -30,6 +34,10 @@ public class Workplace : MonoBehaviour
         else {
             GameObject removed_worker = m_workers[m_workers.Count - 1];
             m_workers.RemoveAt(m_workers.Count - 1);
+            ResourceGatherer rc = gameObject.GetComponent<ResourceGatherer>();
+            if (rc != null) {
+                rc.removeWorker();
+            }
             return removed_worker;
         }
     }

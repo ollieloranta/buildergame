@@ -4,25 +4,32 @@ using UnityEngine;
 
 public class ResourceGatherer : MonoBehaviour
 {
-    bool m_isActive;
+    bool m_isActive = false;
+    bool m_isGenerator;
     string m_resourceType;
     float m_gatherSpeed;
-    float m_gatherSpeedModifier = 1f;
+    float m_increasePerWorker;
     bool m_requireWorkers;
     int m_range;
+    int m_workers = 0;
+    float m_gatherSpeedModifier = 1f;
+    float m_totalGatherSpeed;
     GameObject m_currentResource;
 
-    public void setProperties(string resourceType, float gatherSpeed, bool requireWorkers, int range) {
+    public void setProperties(string resourceType, float gatherSpeed, bool isGenerator=false, bool requireWorkers=false, float increasePerWorker=0f, int range=0) {
         m_resourceType = resourceType;
         m_gatherSpeed = gatherSpeed;
         m_requireWorkers = requireWorkers;
+        m_increasePerWorker = increasePerWorker;
         m_range = range;
-        m_isActive = true;
-        findResource();
+        m_isGenerator = isGenerator;
+        updateTotalGatherSpeed();
+        if (!m_isGenerator) {
+            findResource();
+        }
     }
 
     void findResource() {
-        Debug.Log("Find resource");
         Collider[] hitColliders = Physics.OverlapSphere(new Vector3(transform.position.x, transform.position.y, 0), m_range);
         GameObject resourceObj;
 
@@ -35,7 +42,6 @@ public class ResourceGatherer : MonoBehaviour
                 if (!resource.InUse){
                     resource.resourceLock();
                     m_currentResource = resourceObj;
-                    Debug.Log("Gathering from resource " + resource.name);
                     m_isActive = true;
                     return;
                 }
@@ -46,20 +52,68 @@ public class ResourceGatherer : MonoBehaviour
         m_isActive = false;
     }
 
-    public float consumeResource(float remaining = 0f) {
+    float updateTotalGatherSpeed() {
+        Debug.Log("Update gather speed:");
+        if (m_requireWorkers && m_workers < 1) {
+            
+            Debug.Log("No workers available for building, setting inactive.");
+            m_totalGatherSpeed = 0f;
+            m_isActive = false;
+            return 0f;
+        }
+        m_isActive = true;
+        float gatherSpeed = m_gatherSpeed;
+        if (m_increasePerWorker > 0) {
+            gatherSpeed = gatherSpeed + (m_workers * m_increasePerWorker);
+        }
+        m_totalGatherSpeed = gatherSpeed * Time.deltaTime * m_gatherSpeedModifier;
+        Debug.Log("Updating gather speed to " + m_totalGatherSpeed.ToString());
+        return m_totalGatherSpeed;
+    }
+
+    public float gatherResource(float remaining = 0f) {
         if (!m_isActive) {
             return 0f;
         }
-        float gatherAmount = m_gatherSpeed * Time.deltaTime * m_gatherSpeedModifier;
-        float consumed = m_currentResource.GetComponent<Resource>().consumeResource(gatherAmount);
-        if (consumed < gatherAmount)
-        {
-            findResource();
+        if (m_isGenerator) {
+            return m_totalGatherSpeed;
         }
-        return consumed;
+        else {
+            float gatheredTotal = m_currentResource.GetComponent<Resource>().consumeResource(m_totalGatherSpeed);
+            if (gatheredTotal < m_totalGatherSpeed)
+            {
+                findResource();
+            }
+            return gatheredTotal;
+        }
+    }
+
+    public void addWorker(int n=1) {
+        m_workers += n;
+        updateTotalGatherSpeed();
+    }
+
+    public void removeWorker(int n=1) {
+        m_workers -= n;
+        updateTotalGatherSpeed();
     }
 
     public void addSpeed(float change) {
         m_gatherSpeedModifier += change;
+        updateTotalGatherSpeed();
+    }
+
+    public void setActive() {
+        m_isActive = true;
+    }
+
+    public void setInactive() {
+        m_isActive = false;
+    }
+
+    public string ResourceType {
+        get {
+            return m_resourceType;
+        }
     }
 }
