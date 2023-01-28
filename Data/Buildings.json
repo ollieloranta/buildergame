@@ -1,8 +1,66 @@
 {
     "Items": [
-        {"Name": "Center", "Cost": 0, "Resources": 0.0, "Size_x": 2, "Size_y": 2, "RequiresResearch": [], "Requires": [],"IsGenerator": true, "ResourceType": "Research", "ResourceSpeed": 2, "MaxWorkers": 10},
-        {"Name": "House", "Cost": 20, "Resources": 0.0, "Size_x": 1, "Size_y": 1, "RequiresResearch": [], "Requires": ["Center"]},
-        {"Name": "Factory", "Cost": 50, "Resources": 10, "Size_x": 2, "Size_y": 1, "RequiresResearch": [], "Requires": ["House"], "IsGatherer": true, "GatherRate": 30, "ResourceType": "Tree", "ResourceRange": 5, "ResourceSpeed": 10, "MaxWorkers": 3},
-        {"Name": "Temple", "Cost": 100, "Resources": 10, "Size_x": 2, "Size_y": 2, "RequiresResearch": ["Temple"], "Requires": ["Factory"]}
+        {
+            "Name": "Center",
+            "Cost": 0,
+            "SizeX": 2,
+            "SizeY": 2,
+            "MRequirements": {
+                "Building": [],
+                "Research": []
+            },
+            "MGenerator": {
+                "ResourceType": "Research",
+                "GatherRate": 2
+            },
+            "MWorkplace": {
+                "MaxWorkers": 10
+            }
+        },
+        {
+            "Name": "House",
+            "Cost": 20,
+            "SizeX": 1,
+            "SizeY": 1,
+            "MRequirements": {
+                "Building": ["Center"],
+                "Research": []
+            },
+            "MHousing": {
+                "Places": 3,
+                "Comfort": 1
+            }
+        },
+        {
+            "Name": "Factory",
+            "Cost": 50,
+            "SizeX": 2,
+            "SizeY": 1,
+            "MRequirements": {
+                "Building": ["House"],
+                "Research": []
+            },
+            "MGatherer": {
+                "ResourceType": "Tree",
+                "ResourceRange": 5,
+                "GatherRate": 10, 
+                "RequireWorkers": true
+            },
+            "MWorkplace": {
+                "MaxWorkers": 3
+            }
+        },
+        {
+            "Name": "Temple",
+            "Cost": 100,
+            "SizeX": 2,
+            "SizeY": 2,
+            "MRequirements": {
+                "Building": ["Factory"],
+                "Research": ["Temple"]
+            }
+        }    
+            
     ]
+    
 }

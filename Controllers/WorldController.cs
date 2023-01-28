@@ -19,10 +19,8 @@ public class WorldController : MonoBehaviour
     public GameObject treePrefab;
     public GameObject workerPrefab;
     public GameObject resourceController;
-    public GameObject stateController;
 
     ResourceController rc;
-    StateController sc;
     World world;
     
     BuildingModel[] buildings;
@@ -41,7 +39,6 @@ public class WorldController : MonoBehaviour
     {
         buildingSelected = false;
         rc = resourceController.GetComponent<ResourceController>();
-        sc = stateController.GetComponent<StateController>();
         builtBuildings = new List<GameObject>();
         m_doneResearches = new List<string>();
         m_researches = new Dictionary<string, Research>();
@@ -128,11 +125,11 @@ public class WorldController : MonoBehaviour
             GameObject b = ((GameObject) Instantiate(prefab, worldPosition, prefab.transform.rotation));
             Building building = b.AddComponent<Building>();
             float buildingH = lowestPoint(bm, worldPosition);
-            worldPosition[0] += (bm.Size_x - 1) * 0.5f; // Larger objects do not fit coordinates
-            worldPosition[1] += (bm.Size_y - 1) * 0.5f;
+            worldPosition[0] += (bm.SizeX - 1) * 0.5f; // Larger objects do not fit coordinates
+            worldPosition[1] += (bm.SizeY - 1) * 0.5f;
             worldPosition[2] -= buildingH;
             building.transform.position = worldPosition;
-            building.setProperties(bm, (int)worldPosition[0], (int)worldPosition[1], world);
+            building.setProperties(bm, (int)worldPosition[0], (int)worldPosition[1]);
             b.GetComponent<MeshFilter>().mesh.RecalculateBounds();
             Debug.Log("Created " + building.Name + " at " + worldPosition);
             rc.AddResourceBuilding(b);
@@ -142,11 +139,25 @@ public class WorldController : MonoBehaviour
                 rc.addCenter(b);
                 buildings = buildings.Where(bl => bl.Name != bm.Name).ToArray();
             }
+            else if (bm.Name == "House") {
+                checkHomeless(b);
+            }
             return true;
         }
         else {
             return false;
         }
+    }
+
+    bool checkHomeless(GameObject house) {
+        foreach (GameObject worker in rc.WorkerList) {
+            Worker w = worker.GetComponent<Worker>();
+            if (w.Home == null) {
+                return false;
+            }
+            else return true;
+        }
+        return false;
     }
 
     public bool BuildAreaFree(Vector3 worldPosition, BuildingModel bm=null)
@@ -158,8 +169,8 @@ public class WorldController : MonoBehaviour
         float smallest = 51;
         float highest = 0;
         float maxHeightDiff = 0.1f;
-        for (int x = 0; x < bm.Size_x; x++) {
-            for (int y = 0; y < bm.Size_y; y++) {
+        for (int x = 0; x < bm.SizeX; x++) {
+            for (int y = 0; y < bm.SizeY; y++) {
                 Tile t = world.GetTile((int) worldPosition[0] + x, (int) worldPosition[1] + y);
                 if (t.Contents || t.H < 0  || t.H > 50)
                 {
@@ -179,8 +190,8 @@ public class WorldController : MonoBehaviour
     float lowestPoint(BuildingModel bm, Vector3 worldPosition)
     {
         float lowest = 1000f;
-        for (int x = 0; x < bm.Size_x; x++) {
-            for (int y = 0; y < bm.Size_y; y++) {
+        for (int x = 0; x < bm.SizeX; x++) {
+            for (int y = 0; y < bm.SizeY; y++) {
                 Tile t = world.GetTile((int) worldPosition[0] + x, (int) worldPosition[1] + y);
                 if (t.MapH < lowest)
                     lowest = t.MapH;
@@ -208,13 +219,13 @@ public class WorldController : MonoBehaviour
 
     public bool buildingUnlocked(string b) {
         BuildingModel requiredBuilding = buildings.SingleOrDefault(item => item.Name == b);
-        foreach (string req in requiredBuilding.Requires) {
+        foreach (string req in requiredBuilding.MRequirements.Building) {
             if (!builtBuildings.Find(i => i.GetComponent<Building>().Name == req)) {
                 Debug.Log("Building requirement not found: " + req);
                 return false;
             }
         }
-        string[] researchReq = requiredBuilding.RequiresResearch;
+        string[] researchReq = requiredBuilding.MRequirements.Research;
         foreach (string reqr in researchReq) {
             if (!m_doneResearches.Contains(reqr)) {
                 Debug.Log("Research equirement not found: " + reqr);
@@ -295,7 +306,7 @@ public class WorldController : MonoBehaviour
             dataConfig = JsonUtility.FromJson<DataConfig>(json);
         }
         Debug.Log(dataConfig);
-        Debug.Log(dataConfig.buildingPrefabPath);
+        Debug.Log(dataConfig.BuildingPrefabPath);
     }
 
     public bool getResearch(string research) {
@@ -335,10 +346,10 @@ public class WorldController : MonoBehaviour
     public bool researchAvailable(string rs_name) {
         if (m_doneResearches.Contains(rs_name)) return false;
         Research rs = m_researches[rs_name];
-        foreach (string req in rs.RequiresResearch) {
+        foreach (string req in rs.MRequirements.Research) {
             if (!m_doneResearches.Contains(req)) return false;
         }
-        foreach (string req in rs.RequiresBuilding) {
+        foreach (string req in rs.MRequirements.Building) {
             if (!builtBuildings.Find(i => i.GetComponent<Building>().Name == req)) {
                 return false;
             }

@@ -8,12 +8,10 @@ public class UIController : MonoBehaviour
 {
 
     public GameObject resourceController;
-    public GameObject stateController;
     public GameObject worldController;
     WorldController wc;
     ResourceController rc;
 
-    StateController ac;
     public Text resourceText;
     public Text researchText;
     public Text workerText;
@@ -42,7 +40,6 @@ public class UIController : MonoBehaviour
         buildMenuOpened = false;
         wc = worldController.GetComponent<WorldController>();
         rc = resourceController.GetComponent<ResourceController>();
-        ac = stateController.GetComponent<StateController>();
         CreateButtonClicks();
         closeBuildMenu();
         updateWorkerText();
@@ -112,6 +109,7 @@ public class UIController : MonoBehaviour
             }
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (currentBuilding != null && !buildingPlaced) {
+                Destroy(currentBuilding);
                 Vector3 worldPosition;
                 Plane plane = new Plane(Vector3.back, 0);
                 float distance;
@@ -124,7 +122,6 @@ public class UIController : MonoBehaviour
                     {
                         closeContentsMenu();
                         buildingPlaced = true;
-                        Destroy(currentBuilding);
                     }
                 }
             }
@@ -200,6 +197,7 @@ public class UIController : MonoBehaviour
         buildMenuButton.gameObject.SetActive(false);
         BuildingModel[] buildings = wc.getAllBuildings();
         foreach (BuildingModel b in buildings) {
+            Debug.Log(b.Name);
             Button button = (Button)Instantiate(buildBuildingButton);
             button.transform.SetParent(buttonPanel.transform);
             button.GetComponent<Button>().onClick.AddListener(() => {BuildButtonClick(b.Name);});

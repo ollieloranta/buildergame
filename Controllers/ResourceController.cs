@@ -24,9 +24,14 @@ public class ResourceController : MonoBehaviour
     
     void Update() {
         foreach (var b in resourceBuildings) {
-            Building bScript = b.GetComponent<Building>();
-            m_totalResource += bScript.consumeResource();
-            m_totalResearch += bScript.generateResearch();
+            ResourceGatherer rg = b.GetComponent<ResourceGatherer>();
+            if (rg != null) {
+                m_totalResource += rg.consumeResource();
+            }
+            ResourceGenerator rge = b.GetComponent<ResourceGenerator>();
+            if (rge != null) {
+                m_totalResearch += rge.generateResource();
+            }
         }
     }
 
@@ -34,20 +39,20 @@ public class ResourceController : MonoBehaviour
         Building bs = b.GetComponent<Building>();
         m_totalResource -= bs.Cost;
         if (bs.Name == "Factory" && m_factoriesImproved) {
-            bs.addResourceSpeed(0.2f);
+            bs.GetComponent<ResourceGatherer>().addSpeed(0.2f);
         }
         if (bs.Name == "Temple" && m_templesImproved) {
-            bs.addResearchSpeed(0.25f);
+            bs.GetComponent<ResourceGenerator>().addSpeed(0.25f);
         }
         resourceBuildings.Add(b);
-        Debug.Log("Added new building (" + bs.Name + "). New production: " + bs.Resources);
+        Debug.Log("Added new building (" + bs.Name + ")");
     }
 
-    public Vector3 workerPosition(Building b) {
-        float theta = b.NumWorkers * 2 * Mathf.PI / b.MaxWorkers;
+    public Vector3 workerPosition(Vector3 position, int numWorkers, int maxWorkers) {
+        float theta = numWorkers * 2 * Mathf.PI / maxWorkers;
         float x = Mathf.Sin(theta) * 1;
         float y = Mathf.Cos(theta) * 1;
-        Vector3 pos = new Vector3(x + b.X, y + b.Y, 0);
+        Vector3 pos = new Vector3(x + position.x, y + position.y, 0);
         return pos;
     }
 
@@ -56,27 +61,27 @@ public class ResourceController : MonoBehaviour
             Debug.Log("No workers available.");
             return false;
         }
-        Building b = building.GetComponent<Building>();
-        if (b.NumWorkers >= b.MaxWorkers) {
+        Workplace w = building.GetComponent<Workplace>();
+        if (w.NumWorkers >= w.MaxWorkers) {
             Debug.Log("No space for new workers.");
             return false;
         }
-        Building cb = m_center.GetComponent<Building>();
-        GameObject worker = cb.removeWorker();
-        b.addWorker(worker);
-        Vector3 newPos = workerPosition(b);
+        Workplace cw = m_center.GetComponent<Workplace>();
+        GameObject worker = cw.removeWorker();
+        w.addWorker(worker);
+        Vector3 newPos = workerPosition(building.transform.position, w.NumWorkers, w.MaxWorkers);
         worker.transform.position = newPos;
         m_currentWorkers += 1;
-        Debug.Log("Worker added to " + b.Name);
+        Debug.Log("Worker added to " + building.GetComponent<Building>().Name);
         return true;
     }
 
     public bool removeWorker(GameObject building) {
-        Building b = building.GetComponent<Building>();
-        Building cb = m_center.GetComponent<Building>();
-        if (b.NumWorkers > 0) {
-            GameObject worker = b.removeWorker();
-            cb.addWorker(worker);
+        Workplace w = building.GetComponent<Workplace>();
+        Workplace cw = m_center.GetComponent<Workplace>();
+        if (w.NumWorkers > 0) {
+            GameObject worker = w.removeWorker();
+            cw.addWorker(worker);
             m_currentWorkers -= 1;
             return true;
         } else {
@@ -95,17 +100,22 @@ public class ResourceController : MonoBehaviour
             return false;
         }
         Debug.Log("Adding new worker.");
-        Building b = building.GetComponent<Building>();
-        if (b.NumWorkers < b.MaxWorkers) {
+        Workplace wp = building.GetComponent<Workplace>();
+        if (wp == null) {
+            Debug.Log("Null wp?");
+        }
+        if (building == null) Debug.Log("Null building?");
+        if (wp.NumWorkers < wp.MaxWorkers) {
+            Building b = building.GetComponent<Building>();
             // Spawn workers in circle outside building
-            float theta = b.NumWorkers * 2 * Mathf.PI / b.MaxWorkers;
+            float theta = wp.NumWorkers * 2 * Mathf.PI / wp.MaxWorkers;
             float x = Mathf.Sin(theta) * b.SizeX + 0.25f * b.SizeX;
             float y = Mathf.Cos(theta) * b.SizeY + 0.25f * b.SizeY;
             Vector3 pos = new Vector3(x + b.X, y + b.Y, 0);
             GameObject worker = ((GameObject) Instantiate(workerPrefab, pos, workerPrefab.transform.rotation));
             Worker w = worker.AddComponent<Worker>();
             m_workers.Add(worker);
-            b.addWorker(worker);
+            wp.addWorker(worker);
         }
         Debug.Log("Worker added");
         return true;
@@ -113,8 +123,11 @@ public class ResourceController : MonoBehaviour
 
     public bool addCenter(GameObject building) {
         m_center = building;
-        Building cb = building.GetComponent<Building>();
-        for (int i = 0; i < cb.MaxWorkers; i++) {
+        Workplace wp = building.GetComponent<Workplace>();
+        if (wp == null) {
+            Debug.Log("Null wp?");
+        }
+        for (int i = 0; i < wp.MaxWorkers; i++) {
             addNewWorker(building);
         }
         return true;
@@ -134,7 +147,7 @@ public class ResourceController : MonoBehaviour
         foreach(var building in resourceBuildings) {
             Building b = building.GetComponent<Building>();
             if (b.Name == "Factory") {
-                b.addResourceSpeed(0.2f);
+                building.GetComponent<ResourceGatherer>().addSpeed(0.2f);
             }
         }
     }
@@ -144,7 +157,7 @@ public class ResourceController : MonoBehaviour
         foreach(var building in resourceBuildings) {
             Building b = building.GetComponent<Building>();
             if (b.Name == "Temple") {
-                b.addResearchSpeed(0.25f);
+                building.GetComponent<ResourceGatherer>().addSpeed(0.25f);
             }
         }
     }

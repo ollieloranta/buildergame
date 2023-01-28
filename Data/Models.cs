@@ -1,28 +1,60 @@
 using System;
 
 [Serializable]
+public class DataConfig
+{
+    public string BuildingPrefabPath;
+}
+
+[Serializable]
 public class BuildingModel
 {
     public string Name;
     public int Cost;
-    public float Resources;
-    public int Size_x;
-    public int Size_y;
-    public string[] Requires;
-    public string[] RequiresResearch;
-    public bool IsGatherer;
-    public bool IsGenerator;
-    public float GatherRate;
-    public string ResourceType;
-    public int ResourceRange;
-    public int ResourceSpeed;
-    public int MaxWorkers;
+    public int SizeX;
+    public int SizeY;
+    public Requirements MRequirements;
+    public HousingModel MHousing;
+    public GatherModel MGatherer;
+    public GeneratorModel MGenerator;
+    public WorkplaceModel MWorkplace;
 }
 
 [Serializable]
-public class DataConfig
+public class Requirements
 {
-    public string buildingPrefabPath;
+    public string[] Building;
+    public string[] Research;
+}
+
+[Serializable]
+public class HousingModel
+{
+    public int Places;
+    public int Comfort;
+}
+
+[Serializable]
+public class GatherModel
+{
+    public string ResourceType;
+    public float GatherRate;
+    public int ResourceRange;
+    public bool RequireWorkers;
+}
+
+[Serializable]
+public class GeneratorModel
+{
+    public string ResourceType;
+    public float GatherRate;
+    public bool RequireWorkers;
+}
+
+[Serializable]
+public class WorkplaceModel
+{
+    public int MaxWorkers;
 }
 
 [Serializable]
@@ -31,6 +63,5 @@ public class Research
     public string Name;
     public string Description;
     public int Cost;
-    public string[] RequiresResearch;
-    public string[] RequiresBuilding;
+    public Requirements MRequirements;
 }
