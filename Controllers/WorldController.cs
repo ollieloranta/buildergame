@@ -139,8 +139,8 @@ public class WorldController : MonoBehaviour
                 rc.addCenter(b);
                 buildings = buildings.Where(bl => bl.Name != bm.Name).ToArray();
             }
-            else if (bm.Name == "House") {
-                checkHomeless(b);
+            else if (b.GetComponent<Housing>() != null) {
+                giveHomes(b);
             }
             return true;
         }
@@ -149,15 +149,17 @@ public class WorldController : MonoBehaviour
         }
     }
 
-    bool checkHomeless(GameObject house) {
+    void giveHomes(GameObject house) {
+        Housing h = house.GetComponent<Housing>();
         foreach (GameObject worker in rc.WorkerList) {
-            Worker w = worker.GetComponent<Worker>();
-            if (w.Home == null) {
-                return false;
+            if (h.NumWorkers < h.MaxWorkers) {
+                Worker w = worker.GetComponent<Worker>();
+                if (w.Home == null) {
+                    h.addWorker(worker);
+                    w.giveHome(house);
+                }
             }
-            else return true;
         }
-        return false;
     }
 
     public bool BuildAreaFree(Vector3 worldPosition, BuildingModel bm=null)

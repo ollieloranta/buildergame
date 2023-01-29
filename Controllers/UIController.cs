@@ -214,29 +214,57 @@ public class UIController : MonoBehaviour
         buildMenuOpen = false;
     }
 
+    void addContentsText(string text) {
+        GameObject textObj = new GameObject("popUpText");
+        textObj.transform.SetParent(popUpPanel.transform);
+        Text infoText = textObj.AddComponent<Text>();
+        infoText.text = text;
+        infoText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
+        infoText.color = Color.black;
+    }
+
     void openContentsMenu(GameObject contents) {
+        // TODO: Give contents automatically from the object?
+        // TODO: Drop-down or the like for names etc.
         if (contents) {
             if(contents.GetComponent<WorldObject>() == null) {
                 return;
             }
             popUpPanel.GetComponent<Image>().enabled = true;
             Dictionary<string, string> info = contents.GetComponent<WorldObject>().getInformation();
-            foreach(KeyValuePair<string, string> kv in info)
-            {
-                GameObject textObj = new GameObject("popUpText"+kv.Key);
-                textObj.transform.SetParent(popUpPanel.transform);
-                Text infoText = textObj.AddComponent<Text>();
-                infoText.text = kv.Key + ": " + kv.Value;
-                infoText.font = Resources.GetBuiltinResource(typeof(Font), "Arial.ttf") as Font;
-                infoText.color = Color.black;
+            Housing h = contents.GetComponent<Housing>();
+            if (h != null) {
+                info["Max habitants"] = h.MaxWorkers.ToString();
+                info["Comfort"] = h.Comfort.ToString();
+                addContentsText("Habitants:");
+                for(int i = 0; i < h.Workers.Count; i++) {
+                    Worker worker = h.Workers[i].GetComponent<Worker>();
+                    addContentsText(" " + worker.Name);
+                }
             }
-            if (info["Name"] == "Factory") {
+            Workplace w = contents.GetComponent<Workplace>();
+            if (w != null) {
+                info["Max workers"] = w.MaxWorkers.ToString();
+                addContentsText("Workers:");
+                for(int i = 0; i < w.Workers.Count; i++) {
+                    Worker worker = w.Workers[i].GetComponent<Worker>();
+                    addContentsText(" " + worker.Name);
+                }
+            }
+            ResourceGatherer rg = contents.GetComponent<ResourceGatherer>();
+            if (rg != null) {
+                info["Gathering"] = rg.ResourceType;
                 Button button = (Button)Instantiate(addWorkerButton);
                 HorizontalLayoutGroup hg = button.gameObject.AddComponent<HorizontalLayoutGroup>();
                 hg.SetLayoutHorizontal();
                 button.transform.SetParent(popUpPanel.transform);
                 button.GetComponent<Button>().onClick.AddListener(() => {addWorkerClick(contents);});
                 button.transform.GetChild(0).GetComponent<Text>().text = "Add worker";
+            }
+            foreach(KeyValuePair<string, string> kv in info)
+            {
+                string infoText = kv.Key + ": " + kv.Value;
+                addContentsText(infoText);
             }
             menuContentsOpen = true;
         }
