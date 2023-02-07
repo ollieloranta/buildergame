@@ -7,6 +7,7 @@ public class Worker : WorldObject
     string m_name = "John";
     int m_age = 18;
     float m_health = 100f;
+    GameObject m_home;
 
     public override Dictionary<string, string> getObjectContents() {
         var contents = new Dictionary<string, string>();
@@ -26,6 +27,14 @@ public class Worker : WorldObject
         return m_age;
     }
 
+    public void giveHome(GameObject home) {
+        m_home = home;
+    }
+
+    public void removeHome() {
+        m_home = null;
+    }
+
     public string Name {
         get {
             return m_name;
@@ -39,6 +48,11 @@ public class Worker : WorldObject
     public float Health {
         get {
             return m_health;
+        }
+    }
+    public GameObject Home {
+        get {
+            return m_home;
         }
     }
 }
