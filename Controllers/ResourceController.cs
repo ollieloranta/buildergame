@@ -7,7 +7,9 @@ public class ResourceController : MonoBehaviour
     uint m_maxWorkers = 10;
     uint m_currentWorkers = 0;
     float m_totalResource = 1000f;
+    float m_totalFood = 100f;
     float m_totalResearch = 100f;
+    float m_foodConsumeByWorker = 0.1f;
     bool m_factoriesImproved = false;
     bool m_templesImproved = false;
     GameObject m_center;
@@ -26,15 +28,21 @@ public class ResourceController : MonoBehaviour
         foreach (var b in resourceBuildings) {
             ResourceGatherer rg = b.GetComponent<ResourceGatherer>();
             if (rg != null) {
-                string type = rg.ResourceType;
-                float gathered = rg.gatherResource();
-                if (type == "Research") {
-                    m_totalResearch += gathered;
-                }
-                else {
-                    m_totalResource += gathered;
-                }
+                gatherResource(rg.ResourceType, rg.gatherResource());
             }
+        }
+        consumeFood();
+    }
+
+    void gatherResource(string resource, float gathered) {
+        if (resource == "Research") {
+            m_totalResearch += gathered;
+        }
+        else if (resource == "Tree") {
+            m_totalResource += gathered;
+        }
+        else if (resource == "Berry") {
+            m_totalFood += gathered;
         }
     }
 
@@ -150,6 +158,16 @@ public class ResourceController : MonoBehaviour
             return false;
         }
     }
+
+    public bool consumeFood() {
+        float consumed = m_maxWorkers * m_foodConsumeByWorker * Time.deltaTime;
+        if (m_totalFood < consumed) {
+            m_totalFood = 0;
+            return false;
+        }
+        m_totalFood -= consumed;
+        return true;
+    }
     
     public void improveFactoriesResearch() {
         m_factoriesImproved = true;
@@ -192,6 +210,12 @@ public class ResourceController : MonoBehaviour
     public float Resources {
         get {
             return m_totalResource;
+        }
+    }
+
+    public float Food {
+        get {
+            return m_totalFood;
         }
     }
 

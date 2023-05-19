@@ -12,6 +12,7 @@ public class UIController : MonoBehaviour
     WorldController wc;
     ResourceController rc;
 
+    public Text foodText;
     public Text resourceText;
     public Text researchText;
     public Text workerText;
@@ -55,6 +56,8 @@ public class UIController : MonoBehaviour
     void UpdateUI() {
         float resources = rc.Resources;
         float research = rc.Research;
+        float food = rc.Food;
+        foodText.text = System.String.Format("Food: {0:0}", food);
         resourceText.text = System.String.Format("Resources: {0:0}", resources);
         researchText.text = System.String.Format("Research: {0:0}", research);
         // Disable build menu items that are not affordable

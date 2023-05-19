@@ -54,6 +54,26 @@
             }
         },
         {
+            "Name": "Forager",
+            "Cost": 30,
+            "SizeX": 1,
+            "SizeY": 1,
+            "MRequirements": {
+                "Building": ["House"],
+                "Research": []
+            },
+            "MGatherer": {
+                "ResourceType": "Berry",
+                "ResourceRange": 7,
+                "GatherRate": 8, 
+                "RequireWorkers": true,
+                "SpeedPerWorker": 7
+            },
+            "MWorkplace": {
+                "MaxWorkers": 4
+            }
+        },
+        {
             "Name": "Temple",
             "Cost": 100,
             "SizeX": 2,

@@ -17,6 +17,7 @@ public class WorldController : MonoBehaviour
     public Texture peakTexture;
     public Texture grassTexture;
     public GameObject treePrefab;
+    public GameObject berryPrefab;
     public GameObject workerPrefab;
     public GameObject resourceController;
 
@@ -54,8 +55,11 @@ public class WorldController : MonoBehaviour
         world.RandomizeTilesWithHeight(-440, 490);
         world.SmoothHeights(5, 3);
         world.GenerateRandomizedForest(5, 2);
+        world.GenerateRandomizedBerry(5, 2);
+        world.RemoveInvalidTreesBerries(7, 45);
 
         float forestFactor = 0.75f;
+        float berryFactor = 0.55f;
         // Create tiles
         for (int x = 0; x < world.Width; x++){
             for (int y = 0; y < world.Length; y++){
@@ -100,6 +104,21 @@ public class WorldController : MonoBehaviour
                     new_tree.tag = "Tree";
                     ResourceTree res = new_tree.AddComponent<ResourceTree>();
                     tile_data.Contents = new_tree;
+                }
+                else if (tile_data.B > (60 - 15 * berryFactor)) {
+                    Vector3 worldPosition = new Vector3(x, y, -tile_data.MapH);
+                    float randomJitter = Random.Range(-0.15f, 0.15f);
+                    worldPosition.x += randomJitter;
+                    worldPosition.y += randomJitter;
+                    float berryZRot = Random.Range(0f, 1f);
+                    Quaternion berryRot = berryPrefab.transform.rotation;
+                    berryRot.z = berryZRot;
+                    GameObject new_berry = ((GameObject) Instantiate(berryPrefab, worldPosition, berryRot));
+                    new_berry.AddComponent<BoxCollider>(); // Find resources based on colliders
+                    new_berry.name = "Berry_" + x + "_" + y;
+                    new_berry.tag = "Berry";
+                    ResourceBerry res = new_berry.AddComponent<ResourceBerry>();
+                    tile_data.Contents = new_berry;
                 }
             }
         }

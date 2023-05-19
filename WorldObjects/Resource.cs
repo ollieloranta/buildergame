@@ -51,7 +51,15 @@ public class ResourceTree : Resource
         this.m_resources = 50f;
         this.m_resourceName = "Tree";
     }
+}
 
+public class ResourceBerry : Resource
+{
+    public ResourceBerry()
+    {
+        this.m_resources = 60f;
+        this.m_resourceName = "Berry";
+    }
 }
 
 public class ResourceResearch : Resource

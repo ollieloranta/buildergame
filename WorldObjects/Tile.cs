@@ -10,18 +10,20 @@ public class Tile
     int x;
     int y;
     int h;
-    int f;
+    int f;  // Forest
+    int b;  // Bush
     float map_h;
     TileType type;
     GameObject contents;
 
-    public Tile(World world, int x, int y, int h=0, int f=0)
+    public Tile(World world, int x, int y, int h=0, int f=0, int b=0)
     {
         this.world = world;
         this.x = x;
         this.y = y;
         this.h = h;
         this.f = f;
+        this.b = b;
         updateMapHeight();
     }
 
@@ -63,6 +65,15 @@ public class Tile
         }
         set {
             f = value;
+        }
+    }
+
+    public int B {
+        get {
+            return b;
+        }
+        set {
+            b = value;
         }
     }
 

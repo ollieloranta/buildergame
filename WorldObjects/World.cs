@@ -48,7 +48,7 @@ public class World
         return tiles[x, y];
     }
 
-    public int MeanFiltered(int x, int y, int filterSize=3, bool forest=false) {
+    public int MeanFiltered(int x, int y, int filterSize=3, bool forest=false, bool berry=false) {
         int diff = (int) Mathf.Floor(filterSize / 2.0f);
         int tiles = 0;
         int tileSum = 0;
@@ -58,6 +58,9 @@ public class World
                     tiles += 1;
                     if (forest) {
                         tileSum += GetTile(xx, yy).F;
+                    }
+                    else if (berry) {
+                        tileSum += GetTile(xx, yy).B;
                     }
                     else {
                         tileSum += GetTile(xx, yy).H;
@@ -88,12 +91,15 @@ public class World
         return tileValues[(int) Mathf.Round(tiles / 2)];
     }
 
-    public void SmoothHeights(int k=3, int n=2, bool forest=false) {
+    public void SmoothHeights(int k=3, int n=2, bool forest=false, bool berry=false) {
         for (int nn = 0; nn < n; nn++) {
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < length; y++) {
                     if (forest) {
-                        GetTile(x, y).F = MeanFiltered(x, y, k, forest);
+                        GetTile(x, y).F = MeanFiltered(x, y, k, forest, berry);
+                    }
+                    else if (berry) {
+                        GetTile(x, y).B = MeanFiltered(x, y, k, forest, berry);
                     }
                     else {
                         GetTile(x, y).H = MeanFiltered(x, y, k);
@@ -143,16 +149,27 @@ public class World
                 GetTile(x, y).F = forestFactor;
             }
         }
-        SmoothHeights(k, n, true);
-        RemoveInvalidTrees(7, 45);
+        SmoothHeights(k, n, true, false);
     }
 
-    void RemoveInvalidTrees(int minHeight, int maxHeight) {
+
+    public void GenerateRandomizedBerry(int k=3, int n=3) {
+        for (int x = 0; x < width; x++){
+            for (int y = 0; y < length; y++){
+                int berryFactor = Random.Range(0, 100);
+                GetTile(x, y).B = berryFactor;
+            }
+        }
+        SmoothHeights(k, n, false, true);
+    }
+
+    public void RemoveInvalidTreesBerries(int minHeight, int maxHeight) {
         for (int x = 0; x < width; x++){
             for (int y = 0; y < length; y++){ 
                 Tile tile = GetTile(x, y);
                 if (tile.H < minHeight || tile.H > maxHeight) {
                     tile.F = 0;
+                    tile.B = 0;
                 }
             }
         }
